@@ -1,65 +1,95 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
   <meta charset="UTF-8">
   <title>Cofradía</title>
 
   <link rel="stylesheet" href="styles.css">
 
+  <!-- PapaParse -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 </head>
-<body>
 
 <body>
 
-<h1>Importar personas</h1>
+  <h1>Importar personas</h1>
 
-<div class="auth">
-  <button onclick="login()">🔐 Iniciar sesión</button>
-  <button onclick="logout()">🚪 Salir</button>
+  <!-- 🔐 AUTH -->
+  <div class="auth">
+    <button onclick="login()">🔐 Iniciar sesión</button>
+    <button onclick="logout()">🚪 Salir</button>
+  </div>
+
+  <!-- 📁 CSV -->
+  <input type="file" id="csvFile" accept=".csv" style="display:none">
+
+  <button class="btn-archivo" onclick="document.getElementById('csvFile').click()">
+    📁 Elegir CSV
+  </button>
+
+  <button class="btn-importar" onclick="importarCSV()">⬆️ Importar</button>
+
+  <!-- 🔍 BUSCADOR -->
+  <input type="text" id="buscador" placeholder="Buscar por nombre o calle..." />
+
+  <hr>
+
+  <!-- 📊 RESUMEN -->
+  <div id="resumen" class="resumen"></div>
+
+  <!-- ➕ FORMULARIO -->
+  <h2>Añadir persona</h2>
+  <button onclick="exportarPDF()">📄 Exportar PDF</button>
+<input id="precio" type="number" placeholder="Precio €" style="width:100px;">
+<button onclick="imprimirRecibos()">🧾 Imprimir recibos</button>
+ <button class="btn-filtro" onclick="verPendientes(this)">❌ Pendientes</button>
+<button class="btn-filtro" onclick="verPagados(this)">💳 Pagados</button>
+<button class="btn-filtro" onclick="verActivos(this)">🟢 Activos</button>
+<button class="btn-filtro" onclick="verTodos(this)">👥 Todos</button>
+  <!-- 📋 LISTA -->
+  <h2>Personas</h2>
+  <div id="lista"></div>
+
+  <!-- 🔥 FIREBASE (compat) -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+
+  <!-- 🚀 APP -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script> 
+  <script src="app.js"></script>
+  <script src="./recibos.js"></script>
+<div id="modalForm" class="modal hidden">
+  <div class="modal-content">
+
+    <h2>➕ Nueva persona</h2>
+
+    <input id="nombre" placeholder="Nombre">
+    <input id="apellido1" placeholder="Apellido 1">
+    <input id="apellido2" placeholder="Apellido 2">
+    <input id="direccion" placeholder="Dirección">
+    <input id="poblacion" placeholder="Población">
+    <input id="provincia" placeholder="Provincia">
+    <input id="cp" placeholder="Código postal">
+    <input id="fecha" placeholder="Fecha nacimiento">
+
+    <div class="modal-buttons">
+     <button id="btnGuardar" class="btn-save" onclick="guardarPersona()">💾 Guardar</button>
+      <button onclick="cerrarFormulario()">❌ Cancelar</button>
+    </div>
+
+  </div>
 </div>
+<button class="fab" onclick="abrirFormulario()">➕</button>
+<div id="modalForm" class="modal hidden">
 
-<label class="btn-archivo">
-  📁 Elegir CSV
-  <input type="file" id="csvFile" hidden>
-</label>
+  <div class="modal-header">
+    <button onclick="cerrarFormulario()">←</button>
+    <h2>Nueva persona</h2>
+  </div>
 
-<input type="file" id="csvFile" accept=".csv" style="display:none">
-
-<button class="btn-archivo" onclick="document.getElementById('csvFile').click()">
-  📁 Elegir CSV
-</button>
-
-<button class="btn-importar" onclick="importarCSV()">⬆️ Importar</button>
-<input type="text" id="buscador" placeholder="Buscar por nombre o calle..." />
-<hr>
-<button class="btn-filtro" onclick="verPendientes()">Ver pendientes</button>
-<button class="btn-filtro" onclick="cargarPersonas()">Ver todos</button>
-
-<div id="resumen" class="resumen"></div>
-<h2>Añadir persona</h2>
-
-<div class="formulario">
-  <input id="nombre" placeholder="Nombre">
-  <input id="apellido1" placeholder="Apellido 1">
-  <input id="apellido2" placeholder="Apellido 2">
-  <input id="direccion" placeholder="Dirección">
-  <input id="poblacion" placeholder="Población">
-  <input id="provincia" placeholder="Provincia">
-  <input id="cp" placeholder="Código postal">
-  <input id="fecha" placeholder="Fecha nacimiento (YYYY-MM-DD)">
-
-  <button class="btn-add" onclick="añadirPersona()">➕ Añadir</button>
+  
 </div>
-<h2>Personas</h2>
-<div id="lista"></div>
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
-
-
-
-<script src="app.js"></script>
-
+<div id="toast" class="toast hidden"></div>
 </body>
 </html>

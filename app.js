@@ -1,10 +1,12 @@
-console.log("APP CARGADA BIEN");
-document.getElementById("csvFile")?.addEventListener("change", function() {
-  const nombre = this.files[0]?.name || "";
-  const span = document.getElementById("nombreArchivo");
-  if (span) span.textContent = nombre;
-});
+// ===============================
+// 🚀 CONFIG + INICIO
+// ===============================
+
+console.log("APP PRO INICIADA");
+
 let todasLasPersonas = [];
+let personaEditandoId = null;
+const añoActual = String(new Date().getFullYear());
 
 const firebaseConfig = {
   apiKey: "AIzaSyD7DLEhlAKufj003MMlo1tkBe8k0xrkTyA",
@@ -15,324 +17,208 @@ const firebaseConfig = {
   appId: "1:650302836714:web:66c9ceeaf6de536d3dec93"
 };
 
-// 🔥 Firebase
+// Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const auth = firebase.auth();
 
-window.login = function() {
+
+// ===============================
+// 🔐 AUTH
+// ===============================
+
+window.login = function () {
   const provider = new firebase.auth.GoogleAuthProvider();
 
-  firebase.auth().signInWithPopup(provider)
-    .then((result) => {
-      console.log("✅ Logueado:", result.user.email);
-    })
-    .catch((error) => {
-      console.error("❌ Error login:", error);
+  auth.signInWithPopup(provider)
+    .then(r => console.log("✔️ Login:", r.user.email))
+    .catch(console.error);
+};
+
+window.logout = function () {
+  auth.signOut();
+};
+
+// ===============================
+// ⚡ TIEMPO REAL
+// ===============================
+
+function escucharPersonas() {
+  db.collection("personas")
+    .orderBy("nombreCompleto")
+    .onSnapshot(snapshot => {
+
+      todasLasPersonas = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+
+      render(todasLasPersonas);
     });
 }
-window.logout = function() {
-  firebase.auth().signOut()
-    .then(() => {
-      console.log("👋 Sesión cerrada");
-    });
-}
-auth.onAuthStateChanged(user => {
-  if (user) {
-    console.log("✔️ Logueado:", user.email);
-    cargarPersonas();
-  } else {
-    console.log("❌ No logueado");
-  }
-});
-console.log("APP CARGADA");
 
-const añoActual = String(new Date().getFullYear());
-// 🔹 IMPORTAR CSV
-window.importarCSV = function() {
-  
- 
-  const file = document.getElementById("csvFile").files[0];
+// ===============================
+// 🎨 RENDER
+// ===============================
 
-  if (!file) {
-    alert("Selecciona un archivo");
-    return;
-  }
-
-  Papa.parse(file, {
-    header: true,
-    skipEmptyLines: true,
-    delimiter: "",
-    
-
-    complete: function(results) {
-console.log("PRIMERA FILA:", results.data[0]);
-      let guardados = 0;
-      let duplicados = 0;
-      let total = results.data.length;
-      let procesados = 0;
-
-      const personas = results.data
-  .filter(row => row.nombre || row.apellido1) // 👈 FILTRO
-  .map(row => {
-
-        const limpio = {};
-        Object.keys(row).forEach(key => {
-          limpio[key.trim().replace(/\r/g, "").replace(/\uFEFF/g, "")] = row[key];
-        });
-
-        const apellidos = `${limpio.apellido1 || ""} ${limpio.apellido2 || ""}`.trim();
-
-        const persona = {
-          nombre: limpio.nombre || "",
-          apellidos: apellidos,
-          nombreCompleto: `${apellidos}, ${limpio.nombre || ""}`,
-          direccionCompleta: `${limpio.via || ""} ${limpio.nombreVia || ""} ${limpio.numero || ""}`,
-          codigoPostal: limpio.codigoPostal || "",
-          poblacion: limpio.poblacion || "",
-          provincia: limpio.provincia || "",
-          fechaNacimiento: limpiarFecha(limpio.fechaNacimiento),
-          activo: limpio.activo === "true" || limpio.activo === true,
-            pagos: {} // 👈 AÑADIR 
-        };
-
-        // 🔍 comprobar duplicados
-        db.collection("personas")
-          .where("nombreCompleto", "==", persona.nombreCompleto)
-          .where("direccionCompleta", "==", persona.direccionCompleta)
-          .get()
-          .then(snapshot => {
-
-            if (!snapshot.empty) {
-              duplicados++;
-              procesados++;
-              comprobarFin();
-              return;
-            }
-
-            db.collection("personas").add(persona)
-              .then(() => {
-                guardados++;
-                procesados++;
-                comprobarFin();
-              })
-              .catch((error) => {
-                console.error("❌ Error:", error);
-                procesados++;
-                comprobarFin();
-              });
-
-          });
-
-        return persona;
-      });
-
-      mostrarPersonas(personas);
-
-      function comprobarFin() {
-        if (procesados === total) {
-          alert(`Importacion terminada:
-Nuevos: ${guardados}
-Duplicados: ${duplicados}`);
-        }
-      }
-
-    }
-  });
-}
-
-
-// 🔹 LIMPIAR FECHA
-function limpiarFecha(fecha) {
-  if (!fecha) return null;
-
-  let f = String(fecha).trim();
-
-  if (/^\d{8}$/.test(f)) {
-    const dia = f.substring(0, 2);
-    const mes = f.substring(2, 4);
-    const anio = f.substring(4, 8);
-    return `${anio}-${mes}-${dia}`;
-  }
-
-  if (f.includes("-")) return f;
-
-  return f;
-}
-
-
-// 🔹 MOSTRAR PERSONAS
-
-function mostrarPersonas(personas) {
-  actualizarResumen(personas);
+function render(personas) {
   const contenedor = document.getElementById("lista");
   contenedor.innerHTML = "";
 
   personas.forEach(p => {
-    const div = document.createElement("div");
- div.className = `card ${p.activo ? "activo" : "inactivo"}`;
- div.innerHTML = `
-  <div class="nombre">${p.nombreCompleto}</div>
+
+    const card = document.createElement("div");
+    card.className = `card ${p.activo ? "activo" : "inactivo"}`;
+
+  card.innerHTML = `
+  <div class="top">
+    <span class="nombre">${p.nombreCompleto}</span>
+  </div>
+
   <div class="dato">${p.direccionCompleta}</div>
   <div class="dato">${p.poblacion} (${p.codigoPostal})</div>
-  <div class="dato">Provincia: ${p.provincia}</div>
-  <div class="dato">Nacimiento: ${p.fechaNacimiento || "—"}</div>
-  <div class="dato">Estado: ${p.activo ? "🟢 Activo" : "🔴 Inactivo"}</div>
-<div class="dato">
-<div class="dato">
-  Pago ${añoActual}: 
-  <span class="${p.pagos?.[añoActual] ? "pago-ok" : "pago-pendiente"}">
-    ${p.pagos?.[añoActual] ? "💳 Pagado" : "❌ Pendiente"}
-  </span>
-</div>
- <button class="btn-estado" onclick="toggleActivo('${p.nombreCompleto}', '${p.direccionCompleta}', ${p.activo})">
-  Cambiar estado
-</button>
+  <div class="dato">Provincia: ${p.provincia || "-"}</div>
+  <div class="dato">Nacimiento: ${p.fechaNacimiento || "-"}</div>
 
-<button class="btn-pago" onclick="togglePago('${p.nombreCompleto}', '${p.direccionCompleta}', ${p.pagos?.[añoActual] ? true : false})">
-  Marcar pago
-</button> 
-<button class="btn-eliminar" onclick="eliminarPersona('${p.nombreCompleto}', '${p.direccionCompleta}')">
-  🗑️ Eliminar
-</button>
-`;  
+  <div class="dato">
+    Estado: ${p.activo ? "🟢 Activo" : "🔴 Inactivo"}
+  </div>
 
-    contenedor.appendChild(div);
-  });
-}
-function toggleActivo(nombreCompleto, direccionCompleta, estadoActual) {
+  <div class="dato">
+    Pago ${añoActual}:
+    <span class="${p.pagos?.[añoActual] ? "pago-ok" : "pago-pendiente"}">
+      ${p.pagos?.[añoActual] ? "💳 Pagado" : "❌ Pendiente"}
+    </span>
+  </div>
 
-  db.collection("personas")
-    .where("nombreCompleto", "==", nombreCompleto)
-    .where("direccionCompleta", "==", direccionCompleta)
-    .get()
-    .then(snapshot => {
-      snapshot.forEach(doc => {
-        db.collection("personas").doc(doc.id).update({
-          activo: !estadoActual
-        })
-        .then(() => {
-          cargarPersonas();
-        });
-      });
-    });
-}
+  <button onclick="editarPersona('${p.nombreCompleto}', '${p.direccionCompleta}')">
+    ✏️ Editar
+  </button>
+`;
+    // 🔥 BOTONES LIMPIOS
+    const acciones = document.createElement("div");
 
-function togglePago(nombreCompleto, direccionCompleta, estadoActual) {
+   const btnEstado = crearBtn("Cambiar estado", () =>
+  toggleActivo(p.id, p.activo)
+);
+btnEstado.className = "btn-estado";
 
-  db.collection("personas")
-    .where("nombreCompleto", "==", nombreCompleto)
-    .where("direccionCompleta", "==", direccionCompleta)
-    .get()
-    .then(snapshot => {
-      snapshot.forEach(doc => {
+const btnPago = crearBtn("Marcar pago", () =>
+  togglePago(p.id, p.pagos?.[añoActual])
+);
+btnPago.className = "btn-pago";
 
-        const nuevoEstado = !estadoActual;
+const btnEliminar = crearBtn("Eliminar", () =>
+  eliminarPersona(p.id)
+);
+btnEliminar.className = "btn-eliminar";
 
-        db.collection("personas").doc(doc.id).update({
-          [`pagos.${añoActual}`]: nuevoEstado
-        })
-        .then(() => {
-          console.log("Pago actualizado");
-          cargarPersonas();
-        });
+    acciones.append(btnEstado, btnPago, btnEliminar);
+    card.appendChild(acciones);
 
-      });
-    });
-}
-function verPendientes() {
-  const pendientes = todasLasPersonas.filter(p =>
-    !p.pagos?.[añoActual]
-  );
-
-  mostrarPersonas(pendientes);
-}
-function eliminarPersona(nombreCompleto, direccionCompleta) {
-
-  if (!confirm("¿Seguro que quieres eliminar esta persona?")) return;
-
-  db.collection("personas")
-    .where("nombreCompleto", "==", nombreCompleto)
-    .where("direccionCompleta", "==", direccionCompleta)
-    .get()
-    .then(snapshot => {
-      snapshot.forEach(doc => {
-        db.collection("personas").doc(doc.id).delete()
-          .then(() => {
-            console.log("🗑️ Eliminado");
-            cargarPersonas();
-          });
-      });
-    });
-}
-function actualizarResumen(personas) {
-
-  const total = personas.length;
-
-  const pagados = personas.filter(p => p.pagos?.[añoActual]).length;
-
-  const pendientes = total - pagados;
-
-  const div = document.getElementById("resumen");
-
-  div.innerHTML = `
-    <span class="total">👥 Total: ${total}</span>
-    <span class="pagados">💳 Pagados: ${pagados}</span>
-    <span class="pendientes">❌ Pendientes: ${pendientes}</span>
-  `;
-}
-function verPendientes() {
-
-  const pendientes = todasLasPersonas.filter(p => {
-    return !p.pagos || !p.pagos[añoActual];
+    contenedor.appendChild(card);
   });
 
-  mostrarPersonas(pendientes);
+  actualizarResumen(personas);
 }
-function verTodos() {
-  mostrarPersonas(todasLasPersonas);
+
+function crearBtn(texto, fn) {
+  const b = document.createElement("button");
+  b.textContent = texto;
+  b.addEventListener("click", fn);
+  return b;
 }
-window.añadirPersona = function () {
+
+function verPendientes(btn) {
+  activarFiltro(btn);
+
+  const filtradas = todasLasPersonas.filter(p => !p.pagos?.[añoActual]);
+  render(filtradas);
+}
+
+function verPagados(btn) {
+  activarFiltro(btn);
+
+  const filtradas = todasLasPersonas.filter(p => p.pagos?.[añoActual]);
+  render(filtradas);
+}
+
+function verTodos(btn) {
+  activarFiltro(btn);
+
+  render(todasLasPersonas);
+}
+function abrirFormulario() {
+  const modal = document.getElementById("modalForm");
+
+  // mostrar modal
+  modal.classList.remove("hidden");
+
+  // limpiar formulario
+  limpiarFormulario();
+
+  // valores por defecto
+  document.getElementById("poblacion").value = "GALLUR";
+  document.getElementById("provincia").value = "ZARAGOZA";
+  document.getElementById("cp").value = "50650";
+
+  // foco automático
+  document.getElementById("nombre").focus();
+}
+
+function cerrarFormulario() {
+  document.getElementById("modalForm").classList.add("hidden");
+}
+async function guardarPersona() {
+
+  const btn = document.getElementById("btnGuardar");
+  btn.disabled = true;
+  btn.textContent = "Guardando...";
 
   const nombre = document.getElementById("nombre").value.trim();
   const apellido1 = document.getElementById("apellido1").value.trim();
-  const apellido2 = document.getElementById("apellido2").value.trim();
-  const direccion = document.getElementById("direccion").value.trim();
-  const poblacion = document.getElementById("poblacion").value.trim();
-  const provincia = document.getElementById("provincia").value.trim();
-  const codigoPostal = document.getElementById("cp").value.trim();
-  const fechaNacimiento = document.getElementById("fecha").value.trim();
 
-  // 🔴 VALIDACIÓN
   if (!nombre || !apellido1) {
-    alert("Nombre y apellido son obligatorios");
+    alert("Nombre y apellido obligatorios");
+    btn.disabled = false;
+    btn.textContent = "💾 Guardar";
     return;
   }
 
-  const apellidos = `${apellido1} ${apellido2}`.trim();
-
   const persona = {
     nombre,
-    apellidos,
-    nombreCompleto: `${apellidos}, ${nombre}`,
-    direccionCompleta: direccion,
-    poblacion,
-    provincia,
-    codigoPostal,
-    fechaNacimiento,
+    apellidos: `${apellido1} ${document.getElementById("apellido2").value}`,
+    nombreCompleto: `${apellido1}, ${nombre}`,
+    direccionCompleta: document.getElementById("direccion").value,
+    poblacion: document.getElementById("poblacion").value || "GALLUR",
+    provincia: document.getElementById("provincia").value || "ZARAGOZA",
+    codigoPostal: document.getElementById("cp").value || "50650",
+    fechaNacimiento: document.getElementById("fecha").value,
     activo: true,
     pagos: {}
   };
 
-  db.collection("personas").add(persona)
-    .then(() => {
-      console.log("✔️ Persona añadida");
+  try {
+    if (personaEditandoId) {
+      await db.collection("personas").doc(personaEditandoId).update(persona);
+      mostrarToast("✏️ Persona actualizada");
+      personaEditandoId = null;
+    } else {
+      await db.collection("personas").add(persona);
+      mostrarToast("✅ Persona creada");
+    }
 
-      limpiarFormulario();
-      cargarPersonas();
-    })
-    .catch(err => console.error(err));
-};
+    limpiarFormulario();
+    cerrarFormulario();
+
+  } catch (err) {
+    console.error(err);
+    mostrarToast("❌ Error al guardar");
+  }
+
+  btn.disabled = false;
+  btn.textContent = "💾 Guardar";
+}
 function limpiarFormulario() {
   document.getElementById("nombre").value = "";
   document.getElementById("apellido1").value = "";
@@ -343,50 +229,200 @@ function limpiarFormulario() {
   document.getElementById("cp").value = "";
   document.getElementById("fecha").value = "";
 }
-// 🔹 CARGAR DESDE FIREBASE
-function cargarPersonas() {
-  db.collection("personas").get()
+function mostrarToast(texto) {
+  const toast = document.getElementById("toast");
+
+  toast.textContent = texto;
+  toast.classList.remove("hidden");
+
+  setTimeout(() => {
+    toast.classList.add("hidden");
+  }, 2000);
+}
+
+function editarPersona(nombreCompleto, direccionCompleta) {
+
+  db.collection("personas")
+    .where("nombreCompleto", "==", nombreCompleto)
+    .where("direccionCompleta", "==", direccionCompleta)
+    .get()
     .then(snapshot => {
-      const personas = snapshot.docs.map(doc => doc.data());
 
-      todasLasPersonas = personas;
+      snapshot.forEach(doc => {
+        const p = doc.data();
 
-      mostrarPersonas(personas);
-      console.log("📥 Datos cargados desde Firebase");
-    })
-    .catch(error => {
-      console.error("❌ Error cargando:", error);
+        personaEditandoId = doc.id;
+
+        abrirFormulario();
+
+        // rellenar formulario
+        document.getElementById("nombre").value = p.nombre || "";
+        document.getElementById("apellido1").value = p.apellidos?.split(" ")[0] || "";
+        document.getElementById("apellido2").value = p.apellidos?.split(" ")[1] || "";
+        document.getElementById("direccion").value = p.direccionCompleta || "";
+        document.getElementById("poblacion").value = p.poblacion || "";
+        document.getElementById("provincia").value = p.provincia || "";
+        document.getElementById("cp").value = p.codigoPostal || "";
+        document.getElementById("fecha").value = p.fechaNacimiento || "";
+
+        // 🔥 CAMBIAR BOTÓN
+        const btn = document.getElementById("btnGuardar");
+        btn.textContent = "💾 Guardar cambios";
+        btn.style.background = "#f39c12"; // naranja
+      });
+
     });
 }
+function verActivos(btn) {
+  activarFiltro(btn);
 
+  const filtradas = todasLasPersonas.filter(p => p.activo);
+  render(filtradas);
+}
+function activarFiltro(boton) {
+  document.querySelectorAll(".btn-filtro").forEach(btn => {
+    btn.classList.remove("activo");
+  });
 
-// 🔍 BUSCADOR
-function buscarPersonas(texto) {
-  const filtro = texto.toLowerCase();
+  boton.classList.add("activo");
+}
+// ===============================
+// 🔥 ACCIONES FIREBASE
+// ===============================
 
-  const filtradas = todasLasPersonas.filter(p =>
-    (p.nombreCompleto && p.nombreCompleto.toLowerCase().includes(filtro)) ||
-    (p.direccionCompleta && p.direccionCompleta.toLowerCase().includes(filtro))
-  );
-
-  mostrarPersonas(filtradas);
+function toggleActivo(id, estado) {
+  db.collection("personas").doc(id).update({
+    activo: !estado
+  });
 }
 
+function togglePago(id, estado) {
+  db.collection("personas").doc(id).update({
+    [`pagos.${añoActual}`]: !estado
+  });
+}
 
-// 🔹 AL CARGAR LA WEB
+function eliminarPersona(id) {
+  if (!confirm("¿Eliminar persona?")) return;
+
+  db.collection("personas").doc(id).delete();
+}
+
+// ===============================
+// 📊 RESUMEN
+// ===============================
+
+function actualizarResumen(personas) {
+  const total = personas.length;
+  const pagados = personas.filter(p => p.pagos?.[añoActual]).length;
+  const pendientes = total - pagados;
+  const div = document.getElementById("resumen");
+  document.getElementById("resumen").innerHTML = `
+    <span class="total">👥 Total: ${total}</span>
+    <span class="pagados">💳 Pagados: ${pagados}</span>
+    <span class="pendientes">❌ Pendientes: ${pendientes}</span>
+  `;
+}
+
+// ===============================
+// 🔍 BUSCADOR
+// ===============================
+
+function buscar(texto) {
+  const f = texto.toLowerCase();
+
+  const filtradas = todasLasPersonas.filter(p =>
+    p.nombreCompleto?.toLowerCase().includes(f) ||
+    p.direccionCompleta?.toLowerCase().includes(f)
+  );
+
+  render(filtradas);
+}
+
+// ===============================
+// 📥 CSV IMPORT (MEJORADO)
+// ===============================
+
+window.importarCSV = function () {
+  const file = document.getElementById("csvFile")?.files[0];
+  if (!file) return alert("Selecciona un CSV");
+
+  Papa.parse(file, {
+    header: true,
+    skipEmptyLines: true,
+
+    complete: function (results) {
+
+      const filas = results.data.filter(r => r.nombre || r.apellido1);
+
+      let guardados = 0;
+      let duplicados = 0;
+      let procesados = 0;
+
+      filas.forEach(row => {
+
+        const apellidos = `${row.apellido1 || ""} ${row.apellido2 || ""}`.trim();
+
+        const persona = {
+          nombre: row.nombre || "",
+          apellidos,
+          nombreCompleto: `${apellidos}, ${row.nombre || ""}`,
+          direccionCompleta: `${row.via || ""} ${row.nombreVia || ""} ${row.numero || ""}`,
+          codigoPostal: row.codigoPostal || "",
+          poblacion: row.poblacion || "",
+          provincia: row.provincia || "",
+          fechaNacimiento: row.fechaNacimiento || "",
+          activo: true,
+          pagos: {}
+        };
+
+        db.collection("personas")
+          .where("nombreCompleto", "==", persona.nombreCompleto)
+          .where("direccionCompleta", "==", persona.direccionCompleta)
+          .get()
+          .then(snap => {
+
+            if (!snap.empty) {
+              duplicados++;
+            } else {
+              db.collection("personas").add(persona);
+              guardados++;
+            }
+
+            procesados++;
+
+            if (procesados === filas.length) {
+              alert(`Importado\nNuevos: ${guardados}\nDuplicados: ${duplicados}`);
+            }
+          });
+      });
+    }
+  });
+};
+
+// ===============================
+// ➕ AÑADIR PERSONA
+// ===============================
+
+
+
+// ===============================
+// 🚀 INIT
+// ===============================
+
 window.onload = function () {
-  console.log("DOM cargado");
-
-  cargarPersonas();
 
   const buscador = document.getElementById("buscador");
 
-  if (!buscador) {
-    console.log("❌ No encuentra el input buscador");
-    return;
+  if (buscador) {
+    buscador.addEventListener("input", e =>
+      buscar(e.target.value)
+    );
   }
 
-  buscador.addEventListener("input", (e) => {
-    buscarPersonas(e.target.value);
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      escucharPersonas(); // 🔥 TIEMPO REAL
+    }
   });
 };
