@@ -20,15 +20,23 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const auth = firebase.auth();
 
-function login() {
+window.login = function() {
   const provider = new firebase.auth.GoogleAuthProvider();
-  auth.signInWithPopup(provider);
-}
 
-function logout() {
-  auth.signOut();
+  firebase.auth().signInWithPopup(provider)
+    .then((result) => {
+      console.log("✅ Logueado:", result.user.email);
+    })
+    .catch((error) => {
+      console.error("❌ Error login:", error);
+    });
 }
-
+window.logout = function() {
+  firebase.auth().signOut()
+    .then(() => {
+      console.log("👋 Sesión cerrada");
+    });
+}
 auth.onAuthStateChanged(user => {
   if (user) {
     console.log("✔️ Logueado:", user.email);
