@@ -10,7 +10,19 @@
 </head>
 <body>
 
+<body>
+
 <h1>Importar personas</h1>
+
+<div class="auth">
+  <button onclick="login()">🔐 Iniciar sesión</button>
+  <button onclick="logout()">🚪 Salir</button>
+</div>
+
+<label class="btn-archivo">
+  📁 Elegir CSV
+  <input type="file" id="csvFile" hidden>
+</label>
 
 <input type="file" id="csvFile" accept=".csv" style="display:none">
 
@@ -43,6 +55,10 @@
 <div id="lista"></div>
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+
+
+
 <script src="app.js"></script>
 
 </body>

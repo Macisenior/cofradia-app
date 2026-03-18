@@ -196,3 +196,10 @@ button {
 .btn-add:hover {
   background-color: #27ae60;
 }
+.auth {
+  margin-bottom: 10px;
+}
+
+.auth button {
+  margin-right: 10px;
+}

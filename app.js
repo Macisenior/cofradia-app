@@ -1,4 +1,9 @@
 console.log("APP CARGADA BIEN");
+document.getElementById("csvFile")?.addEventListener("change", function() {
+  const nombre = this.files[0]?.name || "";
+  const span = document.getElementById("nombreArchivo");
+  if (span) span.textContent = nombre;
+});
 let todasLasPersonas = [];
 
 const firebaseConfig = {
@@ -13,7 +18,25 @@ const firebaseConfig = {
 // 🔥 Firebase
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
+const auth = firebase.auth();
 
+function login() {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  auth.signInWithPopup(provider);
+}
+
+function logout() {
+  auth.signOut();
+}
+
+auth.onAuthStateChanged(user => {
+  if (user) {
+    console.log("✔️ Logueado:", user.email);
+    cargarPersonas();
+  } else {
+    console.log("❌ No logueado");
+  }
+});
 console.log("APP CARGADA");
 
 const añoActual = String(new Date().getFullYear());
@@ -64,11 +87,7 @@ console.log("PRIMERA FILA:", results.data[0]);
           activo: limpio.activo === "true" || limpio.activo === true,
             pagos: {} // 👈 AÑADIR 
         };
-document.getElementById("csvFile").addEventListener("change", function() {
-  const nombre = this.files[0]?.name || "";
-  document.getElementById("nombreArchivo").textContent = nombre;
-});
-if (!persona.nombreCompleto.trim() || persona.nombreCompleto === ",") return null;
+
         // 🔍 comprobar duplicados
         db.collection("personas")
           .where("nombreCompleto", "==", persona.nombreCompleto)
