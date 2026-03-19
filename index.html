@@ -48,10 +48,38 @@
 <button class="btn-filtro" onclick="verPagados(this)">💳 Pagados</button>
 <button class="btn-filtro" onclick="verActivos(this)">🟢 Activos</button>
 <button class="btn-filtro" onclick="verTodos(this)">👥 Todos</button>
+<button onclick="irAFiltros()">🔍 Filtros avanzados</button>
 </div>
   <!-- 📋 LISTA -->
   <h2>Personas</h2>
   <div id="lista"></div>
+<div id="pantallaFiltros" style="display:none; padding:10px;">
+
+  <h2>Filtros</h2>
+
+  <label>Año nacimiento</label>
+  <input type="number" id="filtroAnio" placeholder="Ej: 1980">
+
+  <label>Calle</label>
+  <input type="text" id="filtroCalle" placeholder="Ej: Canal">
+
+  <label>Nombre / Apellidos</label>
+  <input type="text" id="filtroNombre" placeholder="Ej: García">
+
+  <label>Provincia</label>
+  <input type="text" id="filtroProvincia" placeholder="Ej: Zaragoza">
+
+  <br><br>
+
+  <button onclick="verResultados()">🔍 Ver resultados</button>
+  <button onclick="pdfFiltrado()">📄 Generar PDF</button>
+  <button onclick="volver()">⬅️ Volver</button>
+
+  <hr>
+
+  <div id="resultadosFiltros"></div>
+
+</div>
 
   <!-- 🔥 FIREBASE (compat) -->
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
@@ -59,9 +87,13 @@
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
 
   <!-- 🚀 APP -->
- <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+ <!-- 🔥 LIBRERÍAS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<!-- 🔥 TU APP -->
 <script src="app.js"></script>
-<script src="./recibos.js"></script>
+<script src="recibos.js"></script>
+<script src="filtros.js"></script>
   <div id="modalForm" class="modal hidden">
   <div class="modal-content">
 

@@ -286,6 +286,8 @@ function activarFiltro(boton) {
 
   boton.classList.add("activo");
 }
+
+
 // ===============================
 // 🔥 ACCIONES FIREBASE
 // ===============================
