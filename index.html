@@ -39,7 +39,7 @@
 
   <!-- ➕ FORMULARIO -->
   <h2>Añadir persona</h2>
-  <button onclick="exportarPDF()">📄 Exportar PDF</button>
+ <button onclick="descargarRecibosPDF()">📄 Exportar PDF</button>
 <input id="precio" type="number" placeholder="Precio €" style="width:100px;">
 <button onclick="imprimirRecibos()">🧾 Imprimir recibos</button>
  <button class="btn-filtro" onclick="verPendientes(this)">❌ Pendientes</button>
@@ -56,10 +56,10 @@
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
 
   <!-- 🚀 APP -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script> 
-  <script src="app.js"></script>
-  <script src="./recibos.js"></script>
-<div id="modalForm" class="modal hidden">
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="app.js"></script>
+<script src="./recibos.js"></script>
+  <div id="modalForm" class="modal hidden">
   <div class="modal-content">
 
     <h2>➕ Nueva persona</h2>
