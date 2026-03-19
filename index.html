@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta charset="UTF-8">
   <title>Cofradía</title>
 
@@ -39,6 +40,7 @@
 
   <!-- ➕ FORMULARIO -->
   <h2>Añadir persona</h2>
+<div class="menu"></div>
  <button onclick="descargarRecibosPDF()">📄 Exportar PDF</button>
 <input id="precio" type="number" placeholder="Precio €" style="width:100px;">
 <button onclick="imprimirRecibos()">🧾 Imprimir recibos</button>
@@ -46,6 +48,7 @@
 <button class="btn-filtro" onclick="verPagados(this)">💳 Pagados</button>
 <button class="btn-filtro" onclick="verActivos(this)">🟢 Activos</button>
 <button class="btn-filtro" onclick="verTodos(this)">👥 Todos</button>
+</div>
   <!-- 📋 LISTA -->
   <h2>Personas</h2>
   <div id="lista"></div>
