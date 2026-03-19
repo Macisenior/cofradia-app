@@ -467,3 +467,44 @@ button:active {
   padding: 12px;
   border-radius: 10px;
 }
+@media (max-width: 768px) {
+  .btn-archivo,
+  .btn-importar {
+    display: none;
+  }
+}
+@media (max-width: 768px) {
+
+  button {
+    background: #f3f4f6; /* gris claro */
+    border: none;
+    border-radius: 12px;
+    padding: 14px;
+    font-size: 16px;
+    font-weight: 600;
+
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  }
+
+}
+@media (max-width: 768px) {
+
+  button[onclick="descargarRecibosPDF()"] {
+    background: #3b82f6;
+    color: white;
+  }
+
+  button[onclick="imprimirRecibos()"] {
+    background: #10b981;
+    color: white;
+  }
+
+}
+@media (max-width: 768px) {
+
+  .btn-filtro {
+    background: #e5e7eb;
+    color: #111;
+  }
+
+}
