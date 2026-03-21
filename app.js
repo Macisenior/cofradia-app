@@ -1,11 +1,13 @@
+
 // ===============================
 // 🚀 CONFIG + INICIO
 // ===============================
 
 console.log("APP PRO INICIADA");
-
+let usuarioActual = null;
 let todasLasPersonas = [];
 let personaEditandoId = null;
+let unsubscribePersonas = null;
 const añoActual = String(new Date().getFullYear());
 
 const firebaseConfig = {
@@ -21,7 +23,9 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const auth = firebase.auth();
-
+function usuarioLogueado() {
+  return usuarioActual !== null;
+}
 
 // ===============================
 // 🔐 AUTH
@@ -70,51 +74,65 @@ function render(personas) {
     const card = document.createElement("div");
     card.className = `card ${p.activo ? "activo" : "inactivo"}`;
 
-  card.innerHTML = `
-  <div class="top">
-    <span class="nombre">${p.nombreCompleto}</span>
-  </div>
+    card.innerHTML = `
+      <div class="top">
+        <span class="nombre">${p.nombreCompleto}</span>
+      </div>
 
-  <div class="dato">${p.direccionCompleta}</div>
-  <div class="dato">${p.poblacion} (${p.codigoPostal})</div>
-  <div class="dato">Provincia: ${p.provincia || "-"}</div>
-  <div class="dato">Nacimiento: ${p.fechaNacimiento || "-"}</div>
+      <div class="dato">${p.direccionCompleta}</div>
+      <div class="dato">${p.poblacion} (${p.codigoPostal})</div>
+      <div class="dato">Provincia: ${p.provincia || "-"}</div>
+      <div class="dato">Nacimiento: ${p.fechaNacimiento || "-"}</div>
 
-  <div class="dato">
-    Estado: ${p.activo ? "🟢 Activo" : "🔴 Inactivo"}
-  </div>
+      <div class="dato">
+        Estado: ${p.activo ? "🟢 Activo" : "🔴 Inactivo"}
+      </div>
 
-  <div class="dato">
-    Pago ${añoActual}:
-    <span class="${p.pagos?.[añoActual] ? "pago-ok" : "pago-pendiente"}">
-      ${p.pagos?.[añoActual] ? "💳 Pagado" : "❌ Pendiente"}
-    </span>
-  </div>
+      <div class="dato">
+        Pago ${añoActual}:
+        <span class="${p.pagos?.[añoActual] ? "pago-ok" : "pago-pendiente"}">
+          ${p.pagos?.[añoActual] ? "💳 Pagado" : "❌ Pendiente"}
+        </span>
+      </div>
 
-  <button onclick="editarPersona('${p.nombreCompleto}', '${p.direccionCompleta}')">
-    ✏️ Editar
-  </button>
-`;
-    // 🔥 BOTONES LIMPIOS
-    const acciones = document.createElement("div");
+      ${usuarioLogueado() ? `
+        <button onclick="editarPersona('${p.id}')">
+          ✏️ Editar
+        </button>
+      ` : ""}
+    `;
 
-   const btnEstado = crearBtn("Cambiar estado", () =>
-  toggleActivo(p.id, p.activo)
-);
-btnEstado.className = "btn-estado";
+    // 🔥 ACCIONES SOLO SI ESTÁ LOGUEADO
+    if (usuarioLogueado()) {
 
-const btnPago = crearBtn("Marcar pago", () =>
-  togglePago(p.id, p.pagos?.[añoActual])
-);
-btnPago.className = "btn-pago";
+      const acciones = document.createElement("div");
 
-const btnEliminar = crearBtn("Eliminar", () =>
-  eliminarPersona(p.id)
-);
-btnEliminar.className = "btn-eliminar";
+      const btnEstado = crearBtn("Cambiar estado", () =>
+        toggleActivo(p.id, p.activo)
+      );
+      btnEstado.className = "btn-estado";
 
-    acciones.append(btnEstado, btnPago, btnEliminar);
-    card.appendChild(acciones);
+      const btnPago = crearBtn("Marcar pago", () =>
+        togglePago(p.id, p.pagos?.[añoActual])
+      );
+      btnPago.className = "btn-pago";
+
+      const btnEliminar = crearBtn("Eliminar", () =>
+        eliminarPersona(p.id)
+      );
+      btnEliminar.className = "btn-eliminar";
+
+      acciones.append(btnEstado, btnPago, btnEliminar);
+      card.appendChild(acciones);
+    }
+
+    // 🔒 Mensaje si NO está logueado (opcional)
+    if (!usuarioLogueado()) {
+      const aviso = document.createElement("div");
+      aviso.textContent = "🔒 Inicia sesión para editar";
+      aviso.className = "aviso-login";
+      card.appendChild(aviso);
+    }
 
     contenedor.appendChild(card);
   });
@@ -196,6 +214,7 @@ async function guardarPersona() {
     fechaNacimiento: document.getElementById("fecha").value,
     activo: true,
     pagos: {}
+    
   };
 
   try {
@@ -240,39 +259,33 @@ function mostrarToast(texto) {
   }, 2000);
 }
 
-function editarPersona(nombreCompleto, direccionCompleta) {
+function editarPersona(id) {
 
-  db.collection("personas")
-    .where("nombreCompleto", "==", nombreCompleto)
-    .where("direccionCompleta", "==", direccionCompleta)
-    .get()
-    .then(snapshot => {
+  db.collection("personas").doc(id).get().then(doc => {
+    const p = doc.data();
 
-      snapshot.forEach(doc => {
-        const p = doc.data();
+    personaEditandoId = id;
 
-        personaEditandoId = doc.id;
+    abrirFormulario();
 
-        abrirFormulario();
+    document.getElementById("nombre").value = p.nombre || "";
+    document.getElementById("apellido1").value = p.apellidos?.split(" ")[0] || "";
+    document.getElementById("apellido2").value = p.apellidos?.split(" ")[1] || "";
+    document.getElementById("direccion").value = p.direccionCompleta || "";
+    document.getElementById("poblacion").value = p.poblacion || "";
+    document.getElementById("provincia").value = p.provincia || "";
+    document.getElementById("cp").value = p.codigoPostal || "";
+    document.getElementById("fecha").value = p.fechaNacimiento || "";
 
-        // rellenar formulario
-        document.getElementById("nombre").value = p.nombre || "";
-        document.getElementById("apellido1").value = p.apellidos?.split(" ")[0] || "";
-        document.getElementById("apellido2").value = p.apellidos?.split(" ")[1] || "";
-        document.getElementById("direccion").value = p.direccionCompleta || "";
-        document.getElementById("poblacion").value = p.poblacion || "";
-        document.getElementById("provincia").value = p.provincia || "";
-        document.getElementById("cp").value = p.codigoPostal || "";
-        document.getElementById("fecha").value = p.fechaNacimiento || "";
+    const btn = document.getElementById("btnGuardar");
+    btn.textContent = "💾 Guardar cambios";
+    btn.style.background = "#f39c12";
+  });
 
-        // 🔥 CAMBIAR BOTÓN
-        const btn = document.getElementById("btnGuardar");
-        btn.textContent = "💾 Guardar cambios";
-        btn.style.background = "#f39c12"; // naranja
-      });
-
-    });
 }
+
+    
+
 function verActivos(btn) {
   activarFiltro(btn);
 
@@ -423,8 +436,8 @@ window.onload = function () {
   }
 
   auth.onAuthStateChanged(user => {
-    if (user) {
-      escucharPersonas(); // 🔥 TIEMPO REAL
-    }
+    usuarioActual = user;
+    escucharPersonas(); // ahora ya es seguro
   });
+
 };
