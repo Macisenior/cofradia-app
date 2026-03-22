@@ -299,8 +299,47 @@ function activarFiltro(boton) {
 
   boton.classList.add("activo");
 }
+window.hacerBackup = async function () {
 
+  const snapshot = await db.collection("personas").get();
 
+  const datos = snapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  }));
+
+  const json = JSON.stringify(datos, null, 2);
+
+  const blob = new Blob([json], { type: "application/json" });
+
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+
+  const fecha = new Date().toISOString().split("T")[0];
+  a.download = `backup_personas_${fecha}.json`;
+
+  a.click();
+
+  URL.revokeObjectURL(url);
+};
+window.restaurarBackup = async function (event) {
+
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const texto = await file.text();
+  const datos = JSON.parse(texto);
+
+  for (const p of datos) {
+    const { id, ...data } = p;
+
+    await db.collection("personas").doc(id).set(data);
+  }
+
+  alert("Backup restaurado correctamente");
+};
 // ===============================
 // 🔥 ACCIONES FIREBASE
 // ===============================
@@ -441,3 +480,6 @@ window.onload = function () {
   });
 
 };
+function irListado() {
+  window.location.href = "listado.html";
+}

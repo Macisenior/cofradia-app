@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Listado PDF</title>
+</head>
+
+<body>
+
+  <h2>Generar listado PDF</h2>
+
+  <select id="ordenListado">
+  <option value="nombre">Nombre</option>
+  <option value="calle">Agrupar por calle</option>
+  <option value="edad">Edad</option>
+  <option value="poblacion">Población</option>
+</select>
+
+  <br><br>
+
+  <button onclick="generarPDFListado()">📄 Generar PDF</button>
+
+  <br><br>
+
+  <button onclick="volver()">⬅️ Volver</button>
+
+  <!-- 🔥 FIREBASE (igual que en index) -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/2.4.0/purify.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+  <script>
+    const firebaseConfig = {
+     apiKey: "AIzaSyD7DLEhlAKufj003MMlo1tkBe8k0xrkTyA",
+  authDomain: "cofradia-app-28829.firebaseapp.com",
+  projectId: "cofradia-app-28829", 
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+  </script>
+
+  <!-- 🔥 TU CÓDIGO -->
+  <script src="listado.js"></script>
+
+</body>
+</html>

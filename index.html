@@ -44,12 +44,14 @@
  <button onclick="descargarRecibosPDF()">📄 Exportar PDF</button>
 <input id="precio" type="number" placeholder="Precio €" style="width:100px;">
 <button onclick="imprimirRecibos()">🖨️ A4 (3)</button>
-<button onclick="imprimirRecibosA3()">🖨️ A3 (6)</button>
  <button class="btn-filtro" onclick="verPendientes(this)">❌ Pendientes</button>
 <button class="btn-filtro" onclick="verPagados(this)">💳 Pagados</button>
 <button class="btn-filtro" onclick="verActivos(this)">🟢 Activos</button>
 <button class="btn-filtro" onclick="verTodos(this)">👥 Todos</button>
+<button onclick="irListado()">📄 Listado PDF</button>
 <button onclick="irAFiltros()">🔍 Filtros avanzados</button>
+<button onclick="hacerBackup()">💾 Copia de seguridad</button>
+<input type="file" onchange="restaurarBackup(event)">
 </div>
   <!-- 📋 LISTA -->
   <h2>Personas</h2>
@@ -95,6 +97,7 @@
 <script src="app.js"></script>
 <script src="recibos.js"></script>
 <script src="filtros.js"></script>
+<script src="listado.js"></script>
   <div id="modalForm" class="modal hidden">
   <div class="modal-content">
 
