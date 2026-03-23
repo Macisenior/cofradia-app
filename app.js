@@ -8,6 +8,7 @@ let usuarioActual = null;
 let todasLasPersonas = [];
 let personaEditandoId = null;
 let unsubscribePersonas = null;
+let filtroActual = "";
 const añoActual = String(new Date().getFullYear());
 
 const firebaseConfig = {
@@ -48,7 +49,13 @@ window.logout = function () {
 // ===============================
 
 function escucharPersonas() {
-  db.collection("personas")
+
+  // 🔥 cancelar listener anterior
+  if (unsubscribePersonas) {
+    unsubscribePersonas();
+  }
+
+  unsubscribePersonas = db.collection("personas")
     .orderBy("nombreCompleto")
     .onSnapshot(snapshot => {
 
@@ -57,7 +64,11 @@ function escucharPersonas() {
         ...doc.data()
       }));
 
-      render(todasLasPersonas);
+   if (filtroActual && filtroActual.trim() !== "") {
+  buscar(filtroActual);
+} else {
+  render(todasLasPersonas); // 🔥 ESTA LÍNEA DEBE ESTAR
+}
     });
 }
 
@@ -66,11 +77,12 @@ function escucharPersonas() {
 // ===============================
 
 function render(personas) {
+  
   const contenedor = document.getElementById("lista");
   contenedor.innerHTML = "";
 
   personas.forEach(p => {
-
+const añoActual = new Date().getFullYear().toString();
     const card = document.createElement("div");
     card.className = `card ${p.activo ? "activo" : "inactivo"}`;
 
@@ -340,6 +352,30 @@ window.restaurarBackup = async function (event) {
 
   alert("Backup restaurado correctamente");
 };
+function limpiarBusqueda() {
+  filtroActual = "";
+  const input = document.getElementById("buscador");
+  input.value = "";
+  input.focus();
+  render(todasLasPersonas);
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  const input = document.getElementById("buscador");
+  const clearBtn = document.querySelector(".btn-limpiar");
+
+  if (!input || !clearBtn) return;
+
+  input.addEventListener("input", () => {
+    clearBtn.classList.toggle("visible", input.value.trim() !== "");
+  });
+
+});
+
+
+
+
 // ===============================
 // 🔥 ACCIONES FIREBASE
 // ===============================
@@ -382,17 +418,38 @@ function actualizarResumen(personas) {
 // 🔍 BUSCADOR
 // ===============================
 
+function normalizarTexto(texto) {
+  return (texto || "")
+    .toLowerCase()
+    .normalize("NFD") // quita tildes
+    .replace(/[\u0300-\u036f]/g, "");
+}
 function buscar(texto) {
-  const f = texto.toLowerCase();
 
-  const filtradas = todasLasPersonas.filter(p =>
-    p.nombreCompleto?.toLowerCase().includes(f) ||
-    p.direccionCompleta?.toLowerCase().includes(f)
-  );
+  filtroActual = texto;
+
+  const filtro = normalizarTexto(texto);
+
+  if (!filtro) {
+    render(todasLasPersonas);
+    return;
+  }
+
+  const filtradas = todasLasPersonas.filter(p => {
+
+    const contenido = `
+      ${p.nombreCompleto || ""}
+      ${p.direccionCompleta || ""}
+      ${p.poblacion || ""}
+      ${p.provincia || ""}
+      ${p.codigoPostal || ""}
+    `;
+
+    return normalizarTexto(contenido).includes(filtro);
+  });
 
   render(filtradas);
 }
-
 // ===============================
 // 📥 CSV IMPORT (MEJORADO)
 // ===============================
@@ -473,13 +530,18 @@ window.onload = function () {
       buscar(e.target.value)
     );
   }
-
-  auth.onAuthStateChanged(user => {
-    usuarioActual = user;
-    escucharPersonas(); // ahora ya es seguro
-  });
-
 };
+ auth.onAuthStateChanged(user => {
+
+  usuarioActual = user;
+
+  console.log("Usuario actual:", user);
+
+  escucharPersonas(); // 🔥 SIEMPRE
+
+});
+
+
 function irListado() {
   window.location.href = "listado.html";
 }

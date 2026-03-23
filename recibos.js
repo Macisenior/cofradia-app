@@ -15,7 +15,7 @@ window.imprimirRecibos = function () {
   let html = `
   <html>
   <head>
-    <style>
+   <style>
 
       @page {
         size: A4;

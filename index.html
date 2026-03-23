@@ -31,8 +31,22 @@
   <button class="btn-importar" onclick="importarCSV()">⬆️ Importar</button>
 
   <!-- 🔍 BUSCADOR -->
-  <input type="text" id="buscador" placeholder="Buscar por nombre o calle..." />
+ <div class="buscador-wrapper">
+  <div class="buscador-container">
+    <span class="icono">🔍</span>
 
+    <input 
+      type="text" 
+      id="buscador" 
+      placeholder="Buscar por nombre, dirección..."
+      oninput="buscar(this.value)"
+    />
+  </div>
+
+  <button class="btn-limpiar" onclick="limpiarBusqueda()">
+    ❌ Limpiar
+  </button>
+</div>
   <hr>
 
   <!-- 📊 RESUMEN -->
