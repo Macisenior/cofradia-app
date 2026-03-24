@@ -57,7 +57,18 @@
 <div class="menu"></div>
  <button onclick="descargarRecibosPDF()">📄 Exportar PDF</button>
 <input id="precio" type="number" placeholder="Precio €" style="width:100px;">
-<button onclick="imprimirRecibos()">🖨️ A4 (3)</button>
+<div class="barra-impresion">
+
+  <select id="ordenSelect">
+    <option value="nombre">Ordenar por nombre</option>
+    <option value="calle">Ordenar por calle</option>
+    <option value="cp">Ordenar por código postal</option>
+  </select>
+
+ <button onclick="imprimirRecibos()">
+  🖨️ Imprimir A4
+</button>
+</div>
  <button class="btn-filtro" onclick="verPendientes(this)">❌ Pendientes</button>
 <button class="btn-filtro" onclick="verPagados(this)">💳 Pagados</button>
 <button class="btn-filtro" onclick="verActivos(this)">🟢 Activos</button>

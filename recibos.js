@@ -2,16 +2,40 @@ window.imprimirRecibos = function () {
 
   const precio = document.getElementById("precio")?.value || "";
   const fecha = new Date().toLocaleDateString("es-ES");
+const orden = document.getElementById("ordenSelect")?.value || "calle";
 
-  const lista = (todasLasPersonas || [])
-  .filter(p => p && p.nombreCompleto)
-  .sort((a, b) =>
+let lista = (todasLasPersonas || [])
+  .filter(p => p && p.nombreCompleto);
+
+if (orden === "nombre") {
+  lista.sort((a, b) =>
+    (a.nombreCompleto || "").localeCompare(
+      (b.nombreCompleto || ""),
+      "es",
+      { sensitivity: "base" }
+    )
+  );
+}
+
+if (orden === "calle") {
+  lista.sort((a, b) =>
     (a.direccionCompleta || "").localeCompare(
       (b.direccionCompleta || ""),
       "es",
       { numeric: true, sensitivity: "base" }
     )
   );
+}
+
+if (orden === "cp") {
+  lista.sort((a, b) =>
+    (a.codigoPostal || "").localeCompare(
+      (b.codigoPostal || ""),
+      "es",
+      { numeric: true, sensitivity: "base" }
+    )
+  );
+}
   let html = `
   <html>
   <head>

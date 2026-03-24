@@ -567,3 +567,28 @@ button:active {
   visibility: visible;
   opacity: 1;
 }
+.barra-impresion {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin: 10px 0;
+}
+
+.barra-impresion select {
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.barra-impresion button {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: none;
+  background: #3498db;
+  color: white;
+  cursor: pointer;
+}
+
+.barra-impresion button:hover {
+  background: #2980b9;
+}
