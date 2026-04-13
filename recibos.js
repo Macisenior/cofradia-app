@@ -93,6 +93,11 @@ if (orden === "cp") {
   height: 100%;
   object-fit: contain;
 }
+  .firmado {
+  margin-top: 130px;     /* lo bajas más */
+  text-align: center;
+  transform: translateX(40%); /* lo movemos a la derecha */
+}
   .der {
   width: 30%;
 }
@@ -134,10 +139,11 @@ if (orden === "cp") {
           <div class="fecha">
             Fecha: ${fecha}
           </div>
-
-          <div class="texto">
-            FIRMADO: ____________________
-          </div>
+<div class="texto firmado">
+  FIRMADO: ____________________
+</div>
+         
+          
         </div>
 
         <div class="der">
