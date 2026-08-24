@@ -15,6 +15,13 @@
       "**/*.bak",
       "**/*.tmp",
       "**/.*",
+      "**/.*/**",
+      ".git",
+      ".git/**",
+      ".firebase",
+      ".firebase/**",
+      ".vscode",
+      ".vscode/**",
       "**/node_modules/**",
       "tests/**",
       "coverage/**"
