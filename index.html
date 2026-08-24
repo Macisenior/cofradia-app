@@ -5,182 +5,192 @@
   <meta charset="UTF-8">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://www.gstatic.com https://apis.google.com; script-src-attr 'none'; connect-src 'self' https://*.googleapis.com https://accounts.google.com; frame-src https://accounts.google.com https://cofradia-app-28829.firebaseapp.com; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
   <title>Cofradía</title>
-
   <link rel="stylesheet" href="styles.css">
-
-  <!-- PapaParse -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js" integrity="sha384-D/t0ZMqQW31H3az8ktEiNb39wyKnS82iFY52QPACM+IjKW3jDUhyIgh2PApRqJZs" crossorigin="anonymous"></script>
 </head>
-
 <body>
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">SC</span>
+        <div>
+          <p class="eyebrow">Gestión de personas</p>
+          <h1>Cofradía San Cristóbal</h1>
+        </div>
+      </div>
+      <div class="session-panel">
+        <div id="authStatus" class="session-status" role="status" aria-live="polite">Inicia sesión con la cuenta autorizada para acceder.</div>
+        <div class="auth">
+          <button id="btnLogin" class="btn btn-primary">Iniciar sesión</button>
+          <button id="btnLogout" class="btn btn-quiet" style="display:none">Salir</button>
+        </div>
+      </div>
+    </div>
+  </header>
 
-  <h1>Importar personas</h1>
+  <main class="app-container">
+    <div id="adminControls" class="app-shell" style="display:none">
+      <section class="panel people-panel" aria-labelledby="tituloPersonas">
+        <div class="section-heading">
+          <div><p class="eyebrow">Área principal</p><h2 id="tituloPersonas">Personas</h2></div>
+          <button id="btnAbrirFormulario" class="btn btn-primary btn-add-person">+ Añadir persona</button>
+        </div>
 
-  <!-- 🔐 AUTH -->
-  <div class="auth">
-    <button id="btnLogin">🔐 Iniciar sesión</button>
-    <button id="btnLogout" style="display:none">🚪 Salir</button>
+        <div class="search-area">
+          <label for="buscador">Buscar personas</label>
+          <div class="buscador-wrapper">
+            <div class="buscador-container">
+              <span class="icono" aria-hidden="true">&#128269;</span>
+              <input type="search" id="buscador" placeholder="Nombre, dirección, población&hellip;" autocomplete="off">
+            </div>
+            <button id="btnLimpiarBusqueda" class="btn btn-quiet btn-limpiar">Limpiar</button>
+          </div>
+        </div>
+
+        <div id="resumen" class="resumen" aria-live="polite"></div>
+
+        <div class="filter-block" aria-labelledby="tituloEstados">
+          <h3 id="tituloEstados">Vista rápida</h3>
+          <div class="quick-filters">
+            <button id="btnPendientes" class="btn btn-filtro">Pendientes</button>
+            <button id="btnPagados" class="btn btn-filtro">Pagados</button>
+            <button id="btnActivos" class="btn btn-filtro">Activos</button>
+            <button id="btnTodos" class="btn btn-filtro">Todos</button>
+          </div>
+        </div>
+
+        <div id="lista" class="people-grid"></div>
+
+        <section id="panelPapelera" class="trash-panel" hidden aria-live="polite" aria-labelledby="tituloPapelera">
+          <div class="section-heading compact">
+            <div><p class="eyebrow">Administración</p><h2 id="tituloPapelera">Papelera</h2></div>
+            <button id="btnCerrarPapelera" class="btn btn-quiet">Volver a personas</button>
+          </div>
+          <div id="estadoPapelera" class="status-message" role="status" aria-live="polite"></div>
+          <div id="listaPapelera" class="trash-grid"></div>
+        </section>
+      </section>
+
+      <section class="panel tools-panel" aria-labelledby="tituloConsultas">
+        <div class="section-heading compact">
+          <div><p class="eyebrow">Consulta y documentación</p><h2 id="tituloConsultas">Herramientas de listado</h2></div>
+        </div>
+        <div class="receipt-settings">
+          <div class="field compact-field">
+            <label for="precio">Importe del recibo</label>
+            <div class="input-suffix"><input id="precio" type="number" placeholder="0,00" inputmode="decimal"><span aria-hidden="true">&euro;</span></div>
+          </div>
+          <div class="field compact-field">
+            <label for="ordenSelect">Orden de impresión</label>
+            <select id="ordenSelect">
+              <option value="nombre">Por nombre</option>
+              <option value="calle">Por calle</option>
+              <option value="cp">Por código postal</option>
+            </select>
+          </div>
+        </div>
+        <div class="tool-grid">
+          <button id="btnDescargarRecibos" class="btn tool-button"><span aria-hidden="true">PDF</span><strong>Exportar recibos</strong><small>Generar archivo PDF</small></button>
+          <button id="btnImprimirRecibos" class="btn tool-button"><span aria-hidden="true">A4</span><strong>Imprimir recibos</strong><small>Formato preparado para papel</small></button>
+          <button id="btnIrListado" class="btn tool-button"><span aria-hidden="true">LISTA</span><strong>Listado PDF</strong><small>Relación general de personas</small></button>
+          <button id="btnIrFiltros" class="btn tool-button"><span aria-hidden="true">FILTRO</span><strong>Filtros avanzados</strong><small>Consulta por varios campos</small></button>
+        </div>
+      </section>
+
+      <details class="panel admin-panel">
+        <summary>
+          <span><span class="eyebrow">Uso ocasional</span><strong>Administración</strong></span>
+          <span class="summary-hint">Mostrar herramientas</span>
+        </summary>
+        <div class="admin-content">
+          <section class="admin-group" aria-labelledby="tituloCsv">
+            <div><h3 id="tituloCsv">Importar personas</h3><p>Selecciona un archivo CSV y revisa el resumen al finalizar.</p></div>
+            <div class="admin-actions">
+              <input type="file" id="csvFile" accept=".csv" class="visually-hidden">
+              <button id="btnElegirCsv" class="btn btn-secondary btn-archivo">Elegir CSV</button>
+              <button id="btnImportarCsv" class="btn btn-primary btn-importar">Importar</button>
+            </div>
+          </section>
+          <section class="admin-group" aria-labelledby="tituloMantenimiento">
+            <div><h3 id="tituloMantenimiento">Mantenimiento</h3><p>Gestiona personas eliminadas y copias completas.</p></div>
+            <div class="admin-actions">
+              <button id="btnPapelera" class="btn btn-secondary">Papelera</button>
+              <button id="btnBackup" class="btn btn-secondary">Crear copia de seguridad</button>
+            </div>
+          </section>
+          <section class="admin-group restore-group" aria-labelledby="tituloRestauracion">
+            <div><h3 id="tituloRestauracion">Restaurar una copia</h3><p>La copia se valida y se muestra una vista previa antes de habilitar la restauración.</p></div>
+            <div class="admin-actions">
+              <button id="btnElegirBackup" class="btn btn-secondary">Elegir copia para restaurar</button>
+              <input type="file" id="backupFile" accept=".json,application/json" class="visually-hidden">
+            </div>
+            <section id="vistaPreviaRestauracion" class="restore-preview" hidden aria-live="polite">
+              <h4>Vista previa de restauración</h4>
+              <div id="resumenVistaPrevia" class="preview-summary"></div>
+              <div class="restore-actions">
+                <button id="btnCrearCopiaPrevia" class="btn btn-secondary">Crear copia previa</button>
+                <button id="btnEjecutarRestauracion" class="btn btn-danger" disabled>Ejecutar restauración</button>
+                <button id="btnCancelarRestauracion" class="btn btn-quiet">Cancelar</button>
+              </div>
+              <div id="estadoRestauracion" class="status-message" role="status" aria-live="polite"></div>
+            </section>
+          </section>
+        </div>
+      </details>
+    </div>
+  </main>
+
+  <section id="pantallaFiltros" class="filters-screen" style="display:none" aria-labelledby="tituloFiltros">
+    <div class="filters-card">
+      <div class="section-heading compact">
+        <div><p class="eyebrow">Consulta</p><h2 id="tituloFiltros">Filtros avanzados</h2></div>
+        <button id="btnVolverFiltros" class="btn btn-quiet">Volver</button>
+      </div>
+      <div class="form-grid filters-form">
+        <div class="field"><label for="filtroAnio">Año de nacimiento</label><input type="number" id="filtroAnio" placeholder="Ej.: 1980"></div>
+        <div class="field"><label for="filtroCalle">Calle</label><input type="text" id="filtroCalle" placeholder="Ej.: Canal"></div>
+        <div class="field"><label for="filtroNombre">Nombre o apellidos</label><input type="text" id="filtroNombre" placeholder="Ej.: García"></div>
+        <div class="field"><label for="filtroProvincia">Provincia</label><input type="text" id="filtroProvincia" placeholder="Ej.: Zaragoza"></div>
+      </div>
+      <div class="filters-actions">
+        <button id="btnVerResultados" class="btn btn-primary">Ver resultados</button>
+        <button id="btnPdfFiltrado" class="btn btn-secondary">Generar PDF</button>
+      </div>
+      <div id="resultadosFiltros" class="results-grid"></div>
+    </div>
+  </section>
+
+  <div id="modalForm" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="tituloFormulario">
+    <div class="modal-content">
+      <div class="modal-heading">
+        <div><p class="eyebrow">Datos personales</p><h2 id="tituloFormulario">Añadir persona</h2></div>
+        <button id="btnCancelarFormulario" class="btn btn-quiet modal-close" aria-label="Cancelar y cerrar formulario">Cancelar</button>
+      </div>
+      <div class="form-grid">
+        <div class="field"><label for="nombre">Nombre <span aria-hidden="true">*</span></label><input id="nombre" autocomplete="given-name" required></div>
+        <div class="field"><label for="apellido1">Primer apellido <span aria-hidden="true">*</span></label><input id="apellido1" autocomplete="family-name" required></div>
+        <div class="field"><label for="apellido2">Segundo apellido</label><input id="apellido2" autocomplete="additional-name"></div>
+        <div class="field field-wide"><label for="direccion">Dirección</label><input id="direccion" autocomplete="street-address"></div>
+        <div class="field"><label for="poblacion">Población</label><input id="poblacion" autocomplete="address-level2"></div>
+        <div class="field"><label for="provincia">Provincia</label><input id="provincia" autocomplete="address-level1"></div>
+        <div class="field"><label for="cp">Código postal</label><input id="cp" inputmode="numeric" autocomplete="postal-code"></div>
+        <div class="field"><label for="fecha">Fecha de nacimiento</label><input id="fecha" placeholder="DD/MM/AAAA" inputmode="numeric"></div>
+      </div>
+      <p class="required-note">Los campos marcados con * son obligatorios.</p>
+      <div class="modal-buttons">
+        <button id="btnGuardar" class="btn btn-primary btn-save">Guardar</button>
+      </div>
+    </div>
   </div>
-  <div id="authStatus" role="status" aria-live="polite">🔒 Inicia sesión con la cuenta autorizada para acceder.</div>
 
-  <div id="adminControls" style="display:none">
-  <!-- 📁 CSV -->
-  <input type="file" id="csvFile" accept=".csv" style="display:none">
+  <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
 
-  <button id="btnElegirCsv" class="btn-archivo">
-    📁 Elegir CSV
-  </button>
-
-  <button id="btnImportarCsv" class="btn-importar">⬆️ Importar</button>
-
-  <!-- 🔍 BUSCADOR -->
- <div class="buscador-wrapper">
-  <div class="buscador-container">
-    <span class="icono">🔍</span>
-
-    <input 
-      type="text" 
-      id="buscador" 
-      placeholder="Buscar por nombre, dirección..."
-    />
-  </div>
-
-  <button id="btnLimpiarBusqueda" class="btn-limpiar">
-    ❌ Limpiar
-  </button>
-</div>
-  <hr>
-
-  <!-- 📊 RESUMEN -->
-  <div id="resumen" class="resumen"></div>
-
-  <!-- ➕ FORMULARIO -->
-  <h2>Añadir persona</h2>
-<div class="menu"></div>
- <button id="btnDescargarRecibos">📄 Exportar PDF</button>
-<input id="precio" type="number" placeholder="Precio €" style="width:100px;">
-<div class="barra-impresion">
-
-  <select id="ordenSelect">
-    <option value="nombre">Ordenar por nombre</option>
-    <option value="calle">Ordenar por calle</option>
-    <option value="cp">Ordenar por código postal</option>
-  </select>
-
- <button id="btnImprimirRecibos">
-  🖨️ Imprimir A4
-</button>
-</div>
- <button id="btnPendientes" class="btn-filtro">❌ Pendientes</button>
-<button id="btnPagados" class="btn-filtro">💳 Pagados</button>
-<button id="btnActivos" class="btn-filtro">🟢 Activos</button>
-<button id="btnTodos" class="btn-filtro">👥 Todos</button>
-<button id="btnIrListado">📄 Listado PDF</button>
-<button id="btnIrFiltros">🔍 Filtros avanzados</button>
-<button id="btnPapelera">🗑️ Papelera</button>
-<button id="btnBackup">💾 Copia de seguridad</button>
-<button id="btnBackupParcial">🧪 Crear copia parcial de prueba</button>
-<section id="selectorBackupParcial" hidden aria-live="polite">
-  <h3>Seleccionar personas para la copia parcial</h3>
-  <p>Esta operación solo genera un archivo y no modifica Firebase.</p>
-  <div id="listaBackupParcial"></div>
-  <button id="btnGenerarBackupParcial">Descargar copia de la selección</button>
-  <button id="btnCancelarBackupParcial">Cancelar</button>
-  <div id="estadoBackupParcial" role="status" aria-live="polite"></div>
-</section>
-<button id="btnElegirBackup">📂 Elegir copia para restaurar</button>
-<input type="file" id="backupFile" accept=".json,application/json" style="display:none">
-<section id="vistaPreviaRestauracion" hidden aria-live="polite">
-  <h3>Vista previa de restauración</h3>
-  <div id="resumenVistaPrevia"></div>
-  <button id="btnCrearCopiaPrevia">💾 Crear copia previa</button>
-  <button id="btnEjecutarRestauracion" disabled>⚠️ Ejecutar restauración</button>
-  <button id="btnCancelarRestauracion">Cancelar</button>
-  <div id="estadoRestauracion" role="status" aria-live="polite"></div>
-</section>
-<section id="panelPapelera" hidden aria-live="polite">
-  <h2>🗑️ Papelera</h2>
-  <button id="btnCerrarPapelera">⬅️ Volver a personas</button>
-  <div id="estadoPapelera" role="status" aria-live="polite"></div>
-  <div id="listaPapelera"></div>
-</section>
-</div>
-  <!-- 📋 LISTA -->
-  <h2 id="tituloPersonas">Personas</h2>
-  <div id="lista"></div>
-<div id="pantallaFiltros" style="display:none; padding:10px;">
-
-  <h2>Filtros</h2>
-
-  <label>Año nacimiento</label>
-  <input type="number" id="filtroAnio" placeholder="Ej: 1980">
-
-  <label>Calle</label>
-  <input type="text" id="filtroCalle" placeholder="Ej: Canal">
-
-  <label>Nombre / Apellidos</label>
-  <input type="text" id="filtroNombre" placeholder="Ej: García">
-
-  <label>Provincia</label>
-  <input type="text" id="filtroProvincia" placeholder="Ej: Zaragoza">
-
-  <br><br>
-
-  <button id="btnVerResultados">🔍 Ver resultados</button>
-  <button id="btnPdfFiltrado">📄 Generar PDF</button>
-  <button id="btnVolverFiltros">⬅️ Volver</button>
-
-  <hr>
-
-  <div id="resultadosFiltros"></div>
-
-</div>
-
-  <!-- 🔥 FIREBASE (compat) -->
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js" integrity="sha384-BkEIW/B4JV9w6pRfBRgZtAcYDk5goH1nUI49rLo8s5PSHgTfgxWBczRVJx+fv5kP" crossorigin="anonymous"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js" integrity="sha384-LF74FIj8PQKxRVken52qSHntBSVEC6b05H04maSVJibifVGmWz9Ajc23WjrRVSCX" crossorigin="anonymous"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js" integrity="sha384-96KlrabK9X4T/tq4duY+/4JE60jZAiSs4QVJFwmY30ETT24x2+89B7qmq7O4IETX" crossorigin="anonymous"></script>
-
-  <!-- 🚀 APP -->
- <!-- 🔥 LIBRERÍAS -->
-<script src="https://cdn.jsdelivr.net/npm/jspdf@4.2.1/dist/jspdf.umd.min.js" integrity="sha384-qovJwSBbRDPP5cEjCp8S0UP66wrvnjaa60XMOGzTNanrThcrGfXfnZkvgY8N1KT3" crossorigin="anonymous"></script>
-
-<!-- 🔥 TU APP -->
-<script src="app.js"></script>
-<script src="recibos.js"></script>
-<script src="filtros.js"></script>
-  <div id="modalForm" class="modal hidden">
-  <div class="modal-content">
-
-    <h2>➕ Nueva persona</h2>
-
-    <input id="nombre" placeholder="Nombre">
-    <input id="apellido1" placeholder="Apellido 1">
-    <input id="apellido2" placeholder="Apellido 2">
-    <input id="direccion" placeholder="Dirección">
-    <input id="poblacion" placeholder="Población">
-    <input id="provincia" placeholder="Provincia">
-    <input id="cp" placeholder="Código postal">
-    <input id="fecha" placeholder="Fecha nacimiento">
-
-    <div class="modal-buttons">
-     <button id="btnGuardar" class="btn-save">💾 Guardar</button>
-      <button id="btnCancelarFormulario">❌ Cancelar</button>
-    </div>
-
-  </div>
-</div>
-<button id="btnAbrirFormulario" class="fab">➕</button>
-<div id="modalForm" class="modal hidden">
-
-  <div class="modal-header">
-    <button id="btnCerrarFormularioSecundario">←</button>
-    <h2>Nueva persona</h2>
-  </div>
-
-  
-</div>
-<div id="toast" class="toast hidden"></div>
-</div>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@4.2.1/dist/jspdf.umd.min.js" integrity="sha384-qovJwSBbRDPP5cEjCp8S0UP66wrvnjaa60XMOGzTNanrThcrGfXfnZkvgY8N1KT3" crossorigin="anonymous"></script>
+  <script src="app.js"></script>
+  <script src="recibos.js"></script>
+  <script src="filtros.js"></script>
 </body>
 </html>
