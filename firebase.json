@@ -1,0 +1,23 @@
+{
+  "firestore": {
+    "rules": "firestore.rules"
+  },
+  "hosting": {
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      "firestore.rules",
+      "**/*.rules",
+      "**/*.json",
+      "**/*.log",
+      "**/*.md",
+      "**/*.patch",
+      "**/*.bak",
+      "**/*.tmp",
+      "**/.*",
+      "**/node_modules/**",
+      "tests/**",
+      "coverage/**"
+    ]
+  }
+}

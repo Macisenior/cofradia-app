@@ -1,3 +1,14 @@
+function escaparHTML(valor) {
+  const entidades = {
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  };
+
+  return String(valor ?? "").replace(/[&<>"']/g, caracter => entidades[caracter]);
+}
 window.imprimirRecibos = function () {
 
   const precio = document.getElementById("precio")?.value || "";
@@ -5,7 +16,7 @@ window.imprimirRecibos = function () {
 const orden = document.getElementById("ordenSelect")?.value || "calle";
 
 let lista = (todasLasPersonas || [])
-  .filter(p => p && p.nombreCompleto);
+  .filter(p => p && p.eliminado !== true && p.nombreCompleto);
 
 if (orden === "nombre") {
   lista.sort((a, b) =>
@@ -120,24 +131,29 @@ if (orden === "cp") {
     html += `<div class="pagina">`;
 
     lista.slice(i, i + 3).forEach((p) => {
+      const nombreSeguro = escaparHTML(p.nombreCompleto);
+      const direccionSegura = escaparHTML(p.direccionCompleta);
+      const cpSeguro = escaparHTML(p.codigoPostal);
+      const poblacionSegura = escaparHTML(p.poblacion);
+      const provinciaSegura = escaparHTML(p.provincia);
 
       html += `
       <div class="recibo">
 
         <div class="izq">
-          <div class="nombre">${p.nombreCompleto}</div>
+          <div class="nombre">${nombreSeguro}</div>
 
-          <div class="direccion">${p.direccionCompleta || ""}</div>
-          <div class="direccion">${p.codigoPostal || ""} ${p.poblacion || ""}</div>
-          <div class="direccion">${p.provincia || ""}</div>
+          <div class="direccion">${direccionSegura}</div>
+          <div class="direccion">${cpSeguro} ${poblacionSegura}</div>
+          <div class="direccion">${provinciaSegura}</div>
 
           <div class="texto">
             CUOTA ${new Date().getFullYear()} COFRADÍA SAN CRISTOBAL<br>
-            CANTIDAD: ${precio ? precio + " €" : "________"}
+            CANTIDAD: ${precio ? escaparHTML(precio) + " €" : "________"}
           </div>
 
           <div class="fecha">
-            Fecha: ${fecha}
+            Fecha: ${escaparHTML(fecha)}
           </div>
 <div class="texto firmado">
   FIRMADO: ____________________
@@ -172,7 +188,7 @@ if (orden === "cp") {
 // ==============================
 function obtenerListaOrdenada() {
   return (todasLasPersonas || [])
-    .filter(p => p && p.nombreCompleto)
+    .filter(p => p && p.eliminado !== true && p.nombreCompleto)
     .sort((a, b) =>
       (a.direccionCompleta || "").localeCompare(
         (b.direccionCompleta || ""),

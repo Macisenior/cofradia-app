@@ -1,18 +1,94 @@
+const firebaseConfig = {
+  apiKey: "AIzaSyD7DLEhlAKufj003MMlo1tkBe8k0xrkTyA",
+  authDomain: "cofradia-app-28829.firebaseapp.com",
+  projectId: "cofradia-app-28829"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const auth = firebase.auth();
+
 window.volver = function () {
   window.location.href = "index.html";
 };
 
-window.onload = function () {
-  db.collection("personas").get().then(snapshot => {
+const ADMIN_EMAIL_LISTADO = "macisenior@gmail.com";
+let todasLasPersonas = [];
+let usuarioListadoAutorizado = false;
+let versionSesionListado = 0;
+
+function actualizarAccesoListado(mensaje, autorizado = false) {
+  usuarioListadoAutorizado = autorizado;
+  const estado = document.getElementById("listadoEstado");
+  const controles = document.getElementById("listadoControls");
+
+  if (!autorizado) todasLasPersonas = [];
+  if (estado) estado.textContent = mensaje;
+  if (controles) controles.style.display = autorizado ? "" : "none";
+}
+
+auth.onAuthStateChanged(async user => {
+  const versionLectura = ++versionSesionListado;
+
+  if (!user) {
+    actualizarAccesoListado("🔒 Inicia sesión desde la página principal para acceder.");
+    return;
+  }
+
+  if (user.email?.toLowerCase() !== ADMIN_EMAIL_LISTADO) {
+    actualizarAccesoListado("⛔ Esta cuenta no está autorizada.");
+    return;
+  }
+
+  todasLasPersonas = [];
+  actualizarAccesoListado("Cargando datos...", true);
+
+  try {
+    const snapshot = await db.collection("personas").get();
+    const sesionActual = auth.currentUser;
+    if (
+      versionLectura !== versionSesionListado ||
+      !sesionActual ||
+      sesionActual.uid !== user.uid ||
+      sesionActual.email?.toLowerCase() !== ADMIN_EMAIL_LISTADO
+    ) {
+      return;
+    }
+
     todasLasPersonas = snapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
-    }));
-  });
-};
+    })).filter(persona => persona.eliminado !== true);
+    actualizarAccesoListado("✅ Datos cargados.", true);
+  } catch (error) {
+    if (
+      versionLectura !== versionSesionListado ||
+      auth.currentUser?.uid !== user.uid ||
+      auth.currentUser?.email?.toLowerCase() !== ADMIN_EMAIL_LISTADO
+    ) {
+      return;
+    }
+
+    console.error(error);
+
+    if (error?.code === "permission-denied") {
+      actualizarAccesoListado("⛔ No tienes permiso para leer los datos.");
+    } else {
+      actualizarAccesoListado("No se pudieron cargar los datos.");
+    }
+  }
+}, error => {
+  versionSesionListado++;
+  console.error(error);
+  actualizarAccesoListado("No se pudo comprobar la sesión.");
+});
 
 // 🔥 FUNCIÓN PRINCIPAL
 window.generarPDFListado = function () {
+  if (!usuarioListadoAutorizado) {
+    actualizarAccesoListado("⛔ Acceso restringido a la cuenta administradora.");
+    return;
+  }
 
   const orden = document.getElementById("ordenListado").value;
 
@@ -144,3 +220,6 @@ function abrirPDF(lista, orden) {
 
   doc.save("listado.pdf");
 }
+
+document.getElementById("btnGenerarListado")?.addEventListener("click", generarPDFListado);
+document.getElementById("btnVolverListado")?.addEventListener("click", volver);

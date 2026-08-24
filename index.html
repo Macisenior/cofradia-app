@@ -3,12 +3,13 @@
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://www.gstatic.com https://apis.google.com; script-src-attr 'none'; connect-src 'self' https://*.googleapis.com https://accounts.google.com; frame-src https://accounts.google.com https://cofradia-app-28829.firebaseapp.com; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
   <title>Cofradía</title>
 
   <link rel="stylesheet" href="styles.css">
 
   <!-- PapaParse -->
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js" integrity="sha384-D/t0ZMqQW31H3az8ktEiNb39wyKnS82iFY52QPACM+IjKW3jDUhyIgh2PApRqJZs" crossorigin="anonymous"></script>
 </head>
 
 <body>
@@ -17,18 +18,20 @@
 
   <!-- 🔐 AUTH -->
   <div class="auth">
-    <button onclick="login()">🔐 Iniciar sesión</button>
-    <button onclick="logout()">🚪 Salir</button>
+    <button id="btnLogin">🔐 Iniciar sesión</button>
+    <button id="btnLogout" style="display:none">🚪 Salir</button>
   </div>
+  <div id="authStatus" role="status" aria-live="polite">🔒 Inicia sesión con la cuenta autorizada para acceder.</div>
 
+  <div id="adminControls" style="display:none">
   <!-- 📁 CSV -->
   <input type="file" id="csvFile" accept=".csv" style="display:none">
 
-  <button class="btn-archivo" onclick="document.getElementById('csvFile').click()">
+  <button id="btnElegirCsv" class="btn-archivo">
     📁 Elegir CSV
   </button>
 
-  <button class="btn-importar" onclick="importarCSV()">⬆️ Importar</button>
+  <button id="btnImportarCsv" class="btn-importar">⬆️ Importar</button>
 
   <!-- 🔍 BUSCADOR -->
  <div class="buscador-wrapper">
@@ -39,11 +42,10 @@
       type="text" 
       id="buscador" 
       placeholder="Buscar por nombre, dirección..."
-      oninput="buscar(this.value)"
     />
   </div>
 
-  <button class="btn-limpiar" onclick="limpiarBusqueda()">
+  <button id="btnLimpiarBusqueda" class="btn-limpiar">
     ❌ Limpiar
   </button>
 </div>
@@ -55,7 +57,7 @@
   <!-- ➕ FORMULARIO -->
   <h2>Añadir persona</h2>
 <div class="menu"></div>
- <button onclick="descargarRecibosPDF()">📄 Exportar PDF</button>
+ <button id="btnDescargarRecibos">📄 Exportar PDF</button>
 <input id="precio" type="number" placeholder="Precio €" style="width:100px;">
 <div class="barra-impresion">
 
@@ -65,21 +67,46 @@
     <option value="cp">Ordenar por código postal</option>
   </select>
 
- <button onclick="imprimirRecibos()">
+ <button id="btnImprimirRecibos">
   🖨️ Imprimir A4
 </button>
 </div>
- <button class="btn-filtro" onclick="verPendientes(this)">❌ Pendientes</button>
-<button class="btn-filtro" onclick="verPagados(this)">💳 Pagados</button>
-<button class="btn-filtro" onclick="verActivos(this)">🟢 Activos</button>
-<button class="btn-filtro" onclick="verTodos(this)">👥 Todos</button>
-<button onclick="irListado()">📄 Listado PDF</button>
-<button onclick="irAFiltros()">🔍 Filtros avanzados</button>
-<button onclick="hacerBackup()">💾 Copia de seguridad</button>
-<input type="file" onchange="restaurarBackup(event)">
+ <button id="btnPendientes" class="btn-filtro">❌ Pendientes</button>
+<button id="btnPagados" class="btn-filtro">💳 Pagados</button>
+<button id="btnActivos" class="btn-filtro">🟢 Activos</button>
+<button id="btnTodos" class="btn-filtro">👥 Todos</button>
+<button id="btnIrListado">📄 Listado PDF</button>
+<button id="btnIrFiltros">🔍 Filtros avanzados</button>
+<button id="btnPapelera">🗑️ Papelera</button>
+<button id="btnBackup">💾 Copia de seguridad</button>
+<button id="btnBackupParcial">🧪 Crear copia parcial de prueba</button>
+<section id="selectorBackupParcial" hidden aria-live="polite">
+  <h3>Seleccionar personas para la copia parcial</h3>
+  <p>Esta operación solo genera un archivo y no modifica Firebase.</p>
+  <div id="listaBackupParcial"></div>
+  <button id="btnGenerarBackupParcial">Descargar copia de la selección</button>
+  <button id="btnCancelarBackupParcial">Cancelar</button>
+  <div id="estadoBackupParcial" role="status" aria-live="polite"></div>
+</section>
+<button id="btnElegirBackup">📂 Elegir copia para restaurar</button>
+<input type="file" id="backupFile" accept=".json,application/json" style="display:none">
+<section id="vistaPreviaRestauracion" hidden aria-live="polite">
+  <h3>Vista previa de restauración</h3>
+  <div id="resumenVistaPrevia"></div>
+  <button id="btnCrearCopiaPrevia">💾 Crear copia previa</button>
+  <button id="btnEjecutarRestauracion" disabled>⚠️ Ejecutar restauración</button>
+  <button id="btnCancelarRestauracion">Cancelar</button>
+  <div id="estadoRestauracion" role="status" aria-live="polite"></div>
+</section>
+<section id="panelPapelera" hidden aria-live="polite">
+  <h2>🗑️ Papelera</h2>
+  <button id="btnCerrarPapelera">⬅️ Volver a personas</button>
+  <div id="estadoPapelera" role="status" aria-live="polite"></div>
+  <div id="listaPapelera"></div>
+</section>
 </div>
   <!-- 📋 LISTA -->
-  <h2>Personas</h2>
+  <h2 id="tituloPersonas">Personas</h2>
   <div id="lista"></div>
 <div id="pantallaFiltros" style="display:none; padding:10px;">
 
@@ -99,9 +126,9 @@
 
   <br><br>
 
-  <button onclick="verResultados()">🔍 Ver resultados</button>
-  <button onclick="pdfFiltrado()">📄 Generar PDF</button>
-  <button onclick="volver()">⬅️ Volver</button>
+  <button id="btnVerResultados">🔍 Ver resultados</button>
+  <button id="btnPdfFiltrado">📄 Generar PDF</button>
+  <button id="btnVolverFiltros">⬅️ Volver</button>
 
   <hr>
 
@@ -110,19 +137,18 @@
 </div>
 
   <!-- 🔥 FIREBASE (compat) -->
-  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js" integrity="sha384-BkEIW/B4JV9w6pRfBRgZtAcYDk5goH1nUI49rLo8s5PSHgTfgxWBczRVJx+fv5kP" crossorigin="anonymous"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js" integrity="sha384-LF74FIj8PQKxRVken52qSHntBSVEC6b05H04maSVJibifVGmWz9Ajc23WjrRVSCX" crossorigin="anonymous"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js" integrity="sha384-96KlrabK9X4T/tq4duY+/4JE60jZAiSs4QVJFwmY30ETT24x2+89B7qmq7O4IETX" crossorigin="anonymous"></script>
 
   <!-- 🚀 APP -->
  <!-- 🔥 LIBRERÍAS -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@4.2.1/dist/jspdf.umd.min.js" integrity="sha384-qovJwSBbRDPP5cEjCp8S0UP66wrvnjaa60XMOGzTNanrThcrGfXfnZkvgY8N1KT3" crossorigin="anonymous"></script>
 
 <!-- 🔥 TU APP -->
 <script src="app.js"></script>
 <script src="recibos.js"></script>
 <script src="filtros.js"></script>
-<script src="listado.js"></script>
   <div id="modalForm" class="modal hidden">
   <div class="modal-content">
 
@@ -138,22 +164,23 @@
     <input id="fecha" placeholder="Fecha nacimiento">
 
     <div class="modal-buttons">
-     <button id="btnGuardar" class="btn-save" onclick="guardarPersona()">💾 Guardar</button>
-      <button onclick="cerrarFormulario()">❌ Cancelar</button>
+     <button id="btnGuardar" class="btn-save">💾 Guardar</button>
+      <button id="btnCancelarFormulario">❌ Cancelar</button>
     </div>
 
   </div>
 </div>
-<button class="fab" onclick="abrirFormulario()">➕</button>
+<button id="btnAbrirFormulario" class="fab">➕</button>
 <div id="modalForm" class="modal hidden">
 
   <div class="modal-header">
-    <button onclick="cerrarFormulario()">←</button>
+    <button id="btnCerrarFormularioSecundario">←</button>
     <h2>Nueva persona</h2>
   </div>
 
   
 </div>
 <div id="toast" class="toast hidden"></div>
+</div>
 </body>
 </html>

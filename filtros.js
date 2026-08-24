@@ -55,31 +55,35 @@ window.verResultados = function () {
 
 // 🖥️ MOSTRAR RESULTADOS
 function pintarResultados(lista) {
-
   const cont = document.getElementById("resultadosFiltros");
-  cont.innerHTML = "";
+  cont.replaceChildren();
 
   if (lista.length === 0) {
-    cont.innerHTML = "<p>No hay resultados</p>";
+    const mensaje = document.createElement("p");
+    mensaje.textContent = "No hay resultados";
+    cont.appendChild(mensaje);
     return;
   }
 
   lista.forEach(p => {
-
     const div = document.createElement("div");
     div.className = "card";
 
-    div.innerHTML = `
-      <b>${p.nombreCompleto}</b><br>
-      ${p.direccionCompleta || ""}<br>
-      ${p.codigoPostal || ""} ${p.poblacion || ""}<br>
-      ${p.provincia || ""}
-    `;
+    const nombre = document.createElement("b");
+    nombre.textContent = p.nombreCompleto || "";
+
+    div.append(
+      nombre,
+      document.createElement("br"),
+      document.createTextNode(p.direccionCompleta || ""),
+      document.createElement("br"),
+      document.createTextNode((p.codigoPostal || "") + " " + (p.poblacion || "")),
+      document.createElement("br"),
+      document.createTextNode(p.provincia || "")
+    );
 
     cont.appendChild(div);
-
   });
-
 }
 window.pdfFiltrado = function () {
 

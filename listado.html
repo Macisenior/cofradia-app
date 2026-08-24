@@ -2,12 +2,15 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://www.gstatic.com https://cdnjs.cloudflare.com; script-src-attr 'none'; connect-src 'self' https://*.googleapis.com https://accounts.google.com; frame-src https://accounts.google.com https://cofradia-app-28829.firebaseapp.com; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
   <title>Listado PDF</title>
 </head>
 
 <body>
 
   <h2>Generar listado PDF</h2>
+  <div id="listadoEstado" role="status" aria-live="polite">🔒 Comprobando sesión...</div>
+  <div id="listadoControls" style="display:none">
 
   <select id="ordenListado">
   <option value="nombre">Nombre</option>
@@ -18,30 +21,20 @@
 
   <br><br>
 
-  <button onclick="generarPDFListado()">📄 Generar PDF</button>
+  <button id="btnGenerarListado">📄 Generar PDF</button>
 
   <br><br>
 
-  <button onclick="volver()">⬅️ Volver</button>
+  <button id="btnVolverListado">⬅️ Volver</button>
+  </div>
 
   <!-- 🔥 FIREBASE (igual que en index) -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/2.4.0/purify.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
-  <script>
-    const firebaseConfig = {
-     apiKey: "AIzaSyD7DLEhlAKufj003MMlo1tkBe8k0xrkTyA",
-  authDomain: "cofradia-app-28829.firebaseapp.com",
-  projectId: "cofradia-app-28829", 
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-  </script>
-
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js" integrity="sha384-gNTK1b3nq+NMsDf1ASdhbVEwXj9tjBeobuvcjWGlmIffN9OP+Q0SU9Q10JKPZryT" crossorigin="anonymous"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js" integrity="sha384-RCX4/afwL4rcvPna7SzxURYLlkH4PeSnyydnrIn/zzZyviOL3A9RZjNPvXunkiFD" crossorigin="anonymous"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js" integrity="sha384-p62xBRve8PdqGDGASZtZMuHgPsyPcT5VsFwgmz2p4zaFdEtt5ZzNqxK+CLzQS7xP" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" integrity="sha384-ZZ1pncU3bQe8y31yfZdMFdSpttDoPmOZg2wguVK9almUodir1PghgT0eY7Mrty8H" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@4.2.1/dist/jspdf.umd.min.js" integrity="sha384-qovJwSBbRDPP5cEjCp8S0UP66wrvnjaa60XMOGzTNanrThcrGfXfnZkvgY8N1KT3" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js" integrity="sha384-vuyrTV5nkscLp1knFvt+FIHfKKzmROBq5reruhMRslauj54mW+l2B8b6szMN6lCL" crossorigin="anonymous"></script>
   <!-- 🔥 TU CÓDIGO -->
   <script src="listado.js"></script>
 
