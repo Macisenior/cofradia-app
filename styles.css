@@ -230,7 +230,7 @@ h4 { margin-bottom: .75rem; font-size: 1rem; }
   letter-spacing: .04em;
   text-transform: uppercase;
 }
-.quick-filters { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.quick-filters { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
 .btn-filtro { border-color: var(--border); background: var(--surface); color: #43545f; }
 .btn-filtro:hover:not(:disabled) { border-color: #aebdc6; background: #f0f4f5; }
 .btn-filtro.activo {
@@ -245,6 +245,17 @@ h4 { margin-bottom: .75rem; font-size: 1rem; }
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 310px), 1fr));
   gap: 14px;
 }
+.hidden-cards-message {
+  margin: 0;
+  padding: 24px 18px;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--soft);
+  color: var(--muted);
+  font-size: .9rem;
+  text-align: center;
+}
+.hidden-cards-message[hidden], .people-grid[hidden] { display: none; }
 .people-grid:empty::after {
   content: "No hay personas para mostrar.";
   grid-column: 1 / -1;
@@ -481,6 +492,54 @@ h4 { margin-bottom: .75rem; font-size: 1rem; }
   border: 0 !important;
 }
 
+/* Pantalla independiente de generación de listados. */
+.listing-page { min-height: 100vh; }
+.listing-header-inner { width: min(760px, calc(100% - 40px)); }
+.listing-main {
+  width: min(680px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: clamp(36px, 7vw, 72px) 0 70px;
+}
+.listing-card {
+  padding: clamp(24px, 5vw, 38px);
+  box-shadow: var(--shadow);
+}
+.listing-heading { max-width: 560px; }
+.listing-intro {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: .94rem;
+}
+.listing-status {
+  width: fit-content;
+  max-width: 100%;
+  margin-top: 24px;
+  padding: 7px 11px;
+  border: 1px solid #c8e2d3;
+  border-radius: 999px;
+  background: var(--success-soft);
+  color: var(--success);
+  overflow-wrap: anywhere;
+  font-size: .82rem;
+  font-weight: 750;
+}
+.listing-controls { margin-top: 26px; }
+.listing-controls .field select {
+  width: 100%;
+  min-height: 50px;
+  padding: 11px 42px 11px 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--text);
+}
+.listing-actions {
+  margin-top: 24px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.listing-actions .btn { min-width: 150px; }
 /* Se conservan las medidas usadas por recibos e impresión. */
 .firma { width: 80px; max-width: 100%; object-fit: contain; }
 .der { float: right; width: 30%; overflow: hidden; text-align: center; }
@@ -516,6 +575,7 @@ h4 { margin-bottom: .75rem; font-size: 1rem; }
   .buscador-wrapper { align-items: stretch; }
   #buscador, .btn-limpiar { min-height: 48px; }
   .quick-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  #btnOcultarFichas { grid-column: 1 / -1; }
   .btn-filtro { min-height: 46px; }
   .people-grid, .results-grid, .trash-grid { grid-template-columns: 1fr; }
   .card { padding: 16px; }
@@ -573,6 +633,15 @@ h4 { margin-bottom: .75rem; font-size: 1rem; }
   .toast { right: 10px; bottom: 10px; max-width: calc(100% - 20px); }
 }
 
+@media (max-width: 600px) {
+  .listing-header-inner, .listing-main { width: min(100% - 20px, 680px); }
+  .listing-header-inner { padding-block: 11px; }
+  .listing-main { padding: 18px 0 34px; }
+  .listing-card { padding: 20px 17px; border-radius: 16px; }
+  .listing-status, .listing-controls { margin-top: 20px; }
+  .listing-actions { margin-top: 20px; }
+  .listing-actions .btn { width: 100%; min-height: 48px; }
+}
 /* Ajuste compacto exclusivo para móvil. */
 @media (max-width: 600px) {
   .header-inner { padding-block: 11px; }

@@ -9,6 +9,7 @@ let todasLasPersonas = [];
 let personaEditandoId = null;
 let unsubscribePersonas = null;
 let filtroActual = "";
+let fichasOcultas = true;
 let versionSesion = 0;
 const añoActual = String(new Date().getFullYear());
 let papeleraCargando = false;
@@ -75,6 +76,7 @@ function limpiarDatosPersonas() {
 
   todasLasPersonas = [];
   filtroActual = "";
+  fichasOcultas = true;
   personaEditandoId = null;
 
   const lista = document.getElementById("lista");
@@ -185,6 +187,8 @@ function escucharPersonas() {
 
       if (filtroActual && filtroActual.trim() !== "") {
         buscar(filtroActual);
+      } else if (fichasOcultas) {
+        ocultarFichas();
       } else {
         render(todasLasPersonas);
       }
@@ -213,6 +217,31 @@ function crearDato(texto) {
   return dato;
 }
 
+function actualizarVistaFichasOcultas() {
+  const lista = document.getElementById("lista");
+  const estado = document.getElementById("estadoFichas");
+  if (lista) lista.hidden = fichasOcultas;
+  if (estado) estado.hidden = !fichasOcultas;
+}
+
+function mostrarFichas() {
+  fichasOcultas = false;
+  actualizarVistaFichasOcultas();
+}
+
+function ocultarFichas(boton = document.getElementById("btnOcultarFichas")) {
+  fichasOcultas = true;
+  filtroActual = "";
+
+  const buscador = document.getElementById("buscador");
+  const limpiar = document.getElementById("btnLimpiarBusqueda");
+  if (buscador) buscador.value = "";
+  if (limpiar) limpiar.classList.remove("visible");
+
+  activarFiltro(boton);
+  actualizarResumen(todasLasPersonas);
+  actualizarVistaFichasOcultas();
+}
 function render(personas) {
   const contenedor = document.getElementById("lista");
   contenedor.replaceChildren();
@@ -293,6 +322,7 @@ function crearBtn(texto, fn) {
 }
 
 function verPendientes(btn) {
+  mostrarFichas();
   activarFiltro(btn);
 
   const filtradas = todasLasPersonas.filter(p => !p.pagos?.[añoActual]);
@@ -300,6 +330,7 @@ function verPendientes(btn) {
 }
 
 function verPagados(btn) {
+  mostrarFichas();
   activarFiltro(btn);
 
   const filtradas = todasLasPersonas.filter(p => p.pagos?.[añoActual]);
@@ -307,6 +338,7 @@ function verPagados(btn) {
 }
 
 function verTodos(btn) {
+  mostrarFichas();
   activarFiltro(btn);
 
   render(todasLasPersonas);
@@ -461,6 +493,7 @@ async function editarPersona(id) {
   }
 }
 function verActivos(btn) {
+  mostrarFichas();
   activarFiltro(btn);
 
   const filtradas = todasLasPersonas.filter(p => p.activo);
@@ -471,7 +504,7 @@ function activarFiltro(boton) {
     btn.classList.remove("activo");
   });
 
-  boton.classList.add("activo");
+  boton?.classList.add("activo");
 }
 const BACKUP_FORMATO = "cofradia-firestore-backup";
 const BACKUP_VERSION = 1;
@@ -1472,11 +1505,9 @@ window.cancelarRestauracion = function (limpiarInput = true) {
   if (limpiarInput && input) input.value = "";
 };
 function limpiarBusqueda() {
-  filtroActual = "";
   const input = document.getElementById("buscador");
-  input.value = "";
-  input.focus();
-  render(todasLasPersonas);
+  ocultarFichas();
+  input?.focus();
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -1578,9 +1609,12 @@ function buscar(texto) {
   const filtro = normalizarTexto(texto);
 
   if (!filtro) {
-    render(todasLasPersonas);
+    ocultarFichas();
     return;
   }
+
+  mostrarFichas();
+  activarFiltro(null);
 
   const filtradas = todasLasPersonas.filter(p => {
 
@@ -1840,6 +1874,7 @@ document.addEventListener("DOMContentLoaded", () => {
   alClic("btnPagados", event => verPagados(event.currentTarget));
   alClic("btnActivos", event => verActivos(event.currentTarget));
   alClic("btnTodos", event => verTodos(event.currentTarget));
+  alClic("btnOcultarFichas", event => ocultarFichas(event.currentTarget));
   alClic("btnIrListado", () => irListado());
   alClic("btnIrFiltros", () => irAFiltros());
   alClic("btnPapelera", () => abrirPapelera());

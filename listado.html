@@ -1,32 +1,54 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta charset="UTF-8">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://www.gstatic.com https://cdnjs.cloudflare.com; script-src-attr 'none'; connect-src 'self' https://*.googleapis.com https://accounts.google.com; frame-src https://accounts.google.com https://cofradia-app-28829.firebaseapp.com; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
   <title>Listado PDF</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 
-<body>
+<body class="listing-page">
+  <header class="app-header listing-header">
+    <div class="header-inner listing-header-inner">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">SC</span>
+        <div>
+          <p class="eyebrow">Listado de personas</p>
+          <h1>Cofradía San Cristóbal</h1>
+        </div>
+      </div>
+    </div>
+  </header>
 
-  <h2>Generar listado PDF</h2>
-  <div id="listadoEstado" role="status" aria-live="polite">🔒 Comprobando sesión...</div>
-  <div id="listadoControls" style="display:none">
+  <main class="listing-main">
+    <section class="panel listing-card" aria-labelledby="tituloListado">
+      <div class="listing-heading">
+        <p class="eyebrow">Documentación</p>
+        <h2 id="tituloListado">Generar listado PDF</h2>
+        <p class="listing-intro">Selecciona cómo quieres ordenar las personas antes de generar el documento.</p>
+      </div>
 
-  <select id="ordenListado">
-  <option value="nombre">Nombre</option>
-  <option value="calle">Agrupar por calle</option>
-  <option value="edad">Edad</option>
-  <option value="poblacion">Población</option>
-</select>
+      <div id="listadoEstado" class="listing-status" role="status" aria-live="polite">🔒 Comprobando sesión...</div>
 
-  <br><br>
+      <div id="listadoControls" class="listing-controls" style="display:none">
+        <div class="field">
+          <label for="ordenListado">Orden del listado</label>
+          <select id="ordenListado">
+            <option value="nombre">Nombre</option>
+            <option value="calle">Agrupar por calle</option>
+            <option value="edad">Edad</option>
+            <option value="poblacion">Población</option>
+          </select>
+        </div>
 
-  <button id="btnGenerarListado">📄 Generar PDF</button>
-
-  <br><br>
-
-  <button id="btnVolverListado">⬅️ Volver</button>
-  </div>
+        <div class="listing-actions">
+          <button id="btnGenerarListado" class="btn btn-primary">Generar PDF</button>
+          <button id="btnVolverListado" class="btn btn-secondary">← Volver</button>
+        </div>
+      </div>
+    </section>
+  </main>
 
   <!-- 🔥 FIREBASE (igual que en index) -->
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js" integrity="sha384-gNTK1b3nq+NMsDf1ASdhbVEwXj9tjBeobuvcjWGlmIffN9OP+Q0SU9Q10JKPZryT" crossorigin="anonymous"></script>
