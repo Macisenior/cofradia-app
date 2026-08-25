@@ -142,11 +142,24 @@
     </div>
   </main>
 
-  <section id="pantallaFiltros" class="filters-screen" style="display:none" aria-labelledby="tituloFiltros">
-    <div class="filters-card">
-      <div class="section-heading compact">
+  <section id="pantallaFiltros" style="display:none" aria-labelledby="tituloFiltros">
+    <header class="app-header listing-header">
+      <div class="header-inner">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true">SC</span>
+          <div>
+            <p class="eyebrow">Filtros avanzados</p>
+            <h1>Cofradía San Cristóbal</h1>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="filters-screen">
+      <div class="filters-card">
+      <div class="section-heading compact filters-heading">
         <div><p class="eyebrow">Consulta</p><h2 id="tituloFiltros">Filtros avanzados</h2></div>
-        <button id="btnVolverFiltros" class="btn btn-quiet">Volver</button>
+        <button id="btnVolverFiltros" class="btn btn-quiet">← Volver</button>
       </div>
       <div class="form-grid filters-form">
         <div class="field"><label for="filtroAnio">Año de nacimiento</label><input type="number" id="filtroAnio" placeholder="Ej.: 1980"></div>
@@ -158,8 +171,9 @@
         <button id="btnVerResultados" class="btn btn-primary">Ver resultados</button>
         <button id="btnPdfFiltrado" class="btn btn-secondary">Generar PDF</button>
       </div>
-      <div id="resultadosFiltros" class="results-grid"></div>
-    </div>
+        <div id="resultadosFiltros" class="results-grid"></div>
+      </div>
+    </main>
   </section>
 
   <div id="modalForm" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="tituloFormulario">

@@ -673,9 +673,12 @@ h4 { margin-bottom: .75rem; font-size: 1rem; }
   .restore-actions { margin-top: 11px; }
   .trash-panel { margin-top: 18px; padding: 12px; }
   .trash-grid { margin-top: 11px; }
-  .filters-form { margin-top: 18px; }
-  .filters-actions { margin-top: 14px; }
-  .results-grid { margin-top: 17px; }
+  .filters-heading { flex-direction: row; align-items: flex-start; gap: 10px; }
+  .filters-heading .btn { width: auto; min-height: 44px; flex: 0 0 auto; padding: 8px 10px; }
+  .filters-card .filters-form { margin-top: 14px; gap: 10px; }
+  .filters-form .field input { min-height: 44px; padding-block: 7px; }
+  .filters-actions { margin-top: 12px; }
+  .filters-card .results-grid { margin-top: 14px; }
   .form-grid { gap: 12px; }
   .field label { margin-bottom: 5px; }
   .field input, .field select { min-height: 44px; padding-block: 8px; }
